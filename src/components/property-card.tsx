@@ -88,9 +88,10 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
       {/* Image Container */}
       <div className="relative aspect-[16/10] overflow-hidden bg-black/40 shrink-0">
         <Image
-          src={property.featuredImage}
+          src={property.featuredImage || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'}
           alt={property.title}
           fill
+          loading="lazy"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />

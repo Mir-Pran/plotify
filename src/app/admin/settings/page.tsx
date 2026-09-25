@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Settings, Sliders, Shield, DollarSign, Bot,
+  Settings, Sliders, Shield, DollarSign,
   Save, CheckCircle2, Phone, Mail, Building2, Bell,
   Power, Globe, Navigation, MessageCircle, AlertTriangle, RotateCcw
 } from 'lucide-react';
@@ -434,7 +434,7 @@ export default function AdminSettingsPage() {
         {/* Section 5: Ploti AI Assistant Engine Settings */}
         <div className="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-500/60 rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-dark-600/50 pb-3">
-            <Bot className="w-5 h-5 text-purple-500" />
+            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain inline-block" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">Ploti AI Assistant Parameters</h2>
               <p className="text-[11px] text-slate-500">Configure LLM model engine and language processing settings</p>

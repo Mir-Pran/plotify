@@ -7,7 +7,7 @@ import { Property, User, ApprovalStatus } from '@/lib/types';
 import { formatBDT } from '@/lib/utils';
 import {
   Building2, Users, DollarSign, Clock, CheckCircle2,
-  AlertTriangle, TrendingUp, Bot, Flag, ArrowUpRight,
+  AlertTriangle, TrendingUp, Flag, ArrowUpRight,
   Eye, Check, X, ShieldAlert, FileText, ChevronRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -16,14 +16,14 @@ export default function AdminOverviewPage() {
   const [stats, setStats] = useState(DataStore.getAdminStats());
   const [properties, setProperties] = useState<Property[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [aiLogs, setAiLogs] = useState(DataStore.getAiLogs());
+  const [aiLogs, setAiLogs] = useState(DataStore.deduplicateLogs(DataStore.getAiLogs()));
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const refreshData = () => {
     setStats(DataStore.getAdminStats());
     setProperties(DataStore.getProperties());
     setUsers(DataStore.getUsers());
-    setAiLogs(DataStore.getAiLogs());
+    setAiLogs(DataStore.deduplicateLogs(DataStore.getAiLogs()));
   };
 
   useEffect(() => {
@@ -271,7 +271,7 @@ export default function AdminOverviewPage() {
         <div className="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-500/60 rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <Bot className="w-4 h-4 text-purple-500" />
+              <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain inline-block" />
               Ploti AI — Live User Queries
             </h2>
             <Link href="/admin/ai-logs" className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">
@@ -279,14 +279,14 @@ export default function AdminOverviewPage() {
             </Link>
           </div>
 
-          {aiLogs.length === 0 ? (
+          {DataStore.deduplicateLogs(aiLogs).length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-500">
               No Ploti AI queries logged yet. Real-time user questions will appear here.
             </div>
           ) : (
             <div className="space-y-2.5">
-              {aiLogs.slice(0, 4).map(log => (
-                <div key={log.id} className="p-3 rounded-xl bg-slate-50 dark:bg-dark-700/60 border border-slate-200 dark:border-dark-500/40 text-xs space-y-1">
+              {DataStore.deduplicateLogs(aiLogs).slice(0, 4).map((log, idx) => (
+                <div key={log.id || `admin-dash-log-${idx}`} className="p-3 rounded-xl bg-slate-50 dark:bg-dark-700/60 border border-slate-200 dark:border-dark-500/40 text-xs space-y-1">
                   <div className="flex justify-between items-center text-[11px] text-slate-500">
                     <span className="font-bold text-brand-600 dark:text-brand-400">{log.user}</span>
                     <span>{log.time} · {log.latency}</span>

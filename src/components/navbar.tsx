@@ -122,6 +122,18 @@ export default function Navbar() {
               {t('switch_to_bangla')}
             </button>
 
+            {/* Ploti AI quick launcher */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('ploti-open'))}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-brand-500/25 bg-brand-500/5 hover:bg-brand-500/15 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-brand-500/50 shadow-xs cursor-pointer"
+              title={lang === 'BN' ? 'প্লটি এআই সহকারী' : 'Ploti AI Assistant'}
+            >
+              <img src="/ploti-avatar.png" alt="Ploti AI" className="w-4 h-4 object-contain" />
+              <span className="hidden sm:inline text-xs font-bold text-brand-600 dark:text-brand-300">
+                Ploti AI
+              </span>
+            </button>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -291,6 +303,17 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new Event('ploti-open'));
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-all text-left cursor-pointer"
+          >
+            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain" />
+            <span>{lang === 'BN' ? 'প্লটি এআই চ্যাট সহকারী' : 'Chat with Ploti AI'}</span>
+          </button>
 
           <div className="pt-3 border-t border-slate-200 dark:border-white/5 space-y-2">
             {user ? (

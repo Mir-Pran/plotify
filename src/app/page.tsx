@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
 import HeroSearch from '@/components/hero-search';
 import PropertyCard from '@/components/property-card';
 import { MOCK_PROPERTIES } from '@/lib/data/mock-properties';
@@ -11,8 +9,8 @@ import { DataStore } from '@/lib/data/store';
 import { Property } from '@/lib/types';
 import { useLanguage } from '@/lib/i18n';
 import {
-  Building2, TreePine, Home, Hotel, Users, ArrowRight, Star,
-  ShieldCheck, MapPin, Zap, TrendingUp, CheckCircle2, Bot, Phone
+  Building2, TreePine, Home, Hotel, Users, ArrowRight,
+  ShieldCheck, MapPin, Zap, TrendingUp, CheckCircle2, Sparkles, Phone
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -70,33 +68,6 @@ export default function HomePage() {
     },
   ];
 
-  const TOP_CITIES = [
-    {
-      name: lang === 'BN' ? 'ঢাকা' : 'Dhaka',
-      count: lang === 'BN' ? '৮৫০+ বিজ্ঞাপন' : '850+ listings',
-      img: 'https://images.unsplash.com/photo-1588497859490-85d1c17db96d?auto=format&fit=crop&w=600&q=80',
-      href: '/properties?district=Dhaka',
-    },
-    {
-      name: lang === 'BN' ? 'চট্টগ্রাম' : 'Chattogram',
-      count: lang === 'BN' ? '৩২০+ বিজ্ঞাপন' : '320+ listings',
-      img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80',
-      href: '/properties?district=Chattogram',
-    },
-    {
-      name: lang === 'BN' ? 'সিলেট' : 'Sylhet',
-      count: lang === 'BN' ? '১৭৫+ বিজ্ঞাপন' : '175+ listings',
-      img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=600&q=80',
-      href: '/properties?district=Sylhet',
-    },
-    {
-      name: lang === 'BN' ? 'রাজশাহী' : 'Rajshahi',
-      count: lang === 'BN' ? '১২০+ বিজ্ঞাপন' : '120+ listings',
-      img: 'https://images.unsplash.com/photo-1543206540-1a10d5e3b8d2?auto=format&fit=crop&w=600&q=80',
-      href: '/properties?district=Rajshahi',
-    },
-  ];
-
   const WHY_ITEMS = [
     {
       icon: ShieldCheck,
@@ -120,11 +91,13 @@ export default function HomePage() {
       bg: 'bg-teal-500/10 border-teal-500/20',
     },
     {
-      icon: Bot,
+      icon: Sparkles,
+      avatarImg: '/ploti-avatar.png',
       title: t('why4_title'),
       desc: t('why4_desc'),
       color: 'text-purple-400',
-      bg: 'bg-purple-500/10 border-purple-500/20',
+      bg: 'bg-brand-500/10 border-brand-500/30',
+      action: 'ploti-ai',
     },
     {
       icon: Zap,
@@ -145,33 +118,6 @@ export default function HomePage() {
   const FEATURED = properties.filter(p => p.isFeatured).slice(0, 6);
   const RECENT = [...properties].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 4);
 
-  const TESTIMONIALS = [
-    {
-      name: lang === 'BN' ? 'তাহমিনা আক্তার' : 'Tahmina Akter',
-      role: lang === 'BN' ? 'বসুন্ধরায় ফ্ল্যাট ক্রেতা' : 'Bought a Flat in Bashundhara',
-      text: lang === 'BN'
-        ? 'প্লটিফাই আমাকে সরাসরি ডেভেলপারের সাথে যুক্ত করেছিল। কোনো ঝামেলা বা অতিরিক্ত দালালি নেই। ২ দিনের মধ্যে সব নথি যাচাই করেছি!'
-        : 'Plotify connected me directly with the developer. No hassle, no agent fees. Verified everything in 2 days!',
-      stars: 5,
-    },
-    {
-      name: lang === 'BN' ? 'ইঞ্জিনিয়ার কামাল হোসেন' : 'Engr. Kamal Hossain',
-      role: lang === 'BN' ? 'পূর্বাচলে জমি বিক্রেতা' : 'Sold Land in Purbachal',
-      text: lang === 'BN'
-        ? 'মাত্র কয়েক মিনিটে আমার ৮ কাঠার প্লট পোস্ট করেছি। ৩ দিনের মধ্যে ১২টি প্রকৃত ক্রেতার প্রস্তাব পেয়েছি। চমৎকার সেবা!'
-        : 'Posted my 8-Katha plot with the mobile form in minutes. Got 12 genuine inquiries in 3 days. Incredible reach!',
-      stars: 5,
-    },
-    {
-      name: lang === 'BN' ? 'সাদিয়া ইসলাম' : 'Sadia Islam',
-      role: lang === 'BN' ? 'উত্তরায় ভাড়াটে' : 'Renting in Uttara',
-      text: lang === 'BN'
-        ? 'প্লটি এআই আমাকে মেট্রোর কাছে যাচাইকৃত ফ্ল্যাট খুঁজে পেতে সাহায্য করেছে। এক সপ্তাহের মধ্যে নতুন বাসা পেয়েছি!'
-        : 'The Ploti AI helped me filter verified flats near the Metro. Found my home in a week!',
-      stars: 5,
-    },
-  ];
-
   const trustBadges = [
     t('home_trust_listings'),
     t('home_trust_districts'),
@@ -183,7 +129,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-slate-50 dark:bg-dark-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
 
       {/* ===================== HERO ===================== */}
-      <section className="relative z-30 bg-transparent hero-glow pb-20 pt-16 sm:pt-24">
+      <section className="relative z-30 bg-transparent hero-glow pb-20 pt-16 sm:pt-20">
         {/* Ambient light glow - contained in its own overflow-hidden layer */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
@@ -194,16 +140,8 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
 
-            {/* Tagline pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md bg-white/80 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 mb-6 shadow-sm animate-fade-in">
-              <Star className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 fill-brand-500 dark:fill-brand-400" />
-              <span className="text-xs font-bold text-brand-700 dark:text-brand-300 tracking-wide">
-                {t('home_hero_badge')}
-              </span>
-            </div>
-
             {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-slate-900 dark:text-white mb-5 leading-tight animate-fade-in delay-100">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-slate-900 dark:text-white mb-5 leading-tight animate-fade-in">
               {t('home_hero_h1a')}{' '}
               <span className="text-gradient">{t('home_hero_h1b')}</span>
               <br />
@@ -211,19 +149,19 @@ export default function HomePage() {
             </h1>
 
             {/* Subhead */}
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 animate-fade-in delay-200 leading-relaxed font-normal">
+            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 animate-fade-in delay-100 leading-relaxed font-normal">
               {t('home_hero_sub')}
               <br className="hidden sm:block" />
               <strong className="text-brand-600 dark:text-brand-300 font-semibold">{t('home_hero_sub2')}</strong>
             </p>
 
             {/* Cascading Location Search Bar */}
-            <div className="flex justify-center animate-fade-in delay-300 relative z-30">
+            <div className="flex justify-center animate-fade-in delay-200 relative z-30">
               <HeroSearch />
             </div>
 
             {/* Trust row */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-xs text-slate-600 dark:text-slate-400 animate-fade-in delay-400">
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-xs text-slate-600 dark:text-slate-400 animate-fade-in delay-300">
               {trustBadges.map(s => (
                 <span key={s} className="flex items-center gap-1.5 backdrop-blur-sm bg-white/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-full shadow-sm text-slate-700 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400" />
@@ -231,12 +169,14 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
+
+
           </div>
         </div>
       </section>
 
       {/* ===================== CATEGORIES ===================== */}
-      <section className="relative z-10 py-16 backdrop-blur-md bg-slate-100/60 dark:bg-black/30 border-y border-slate-200/80 dark:border-white/10">
+      <section className="relative z-10 py-16 backdrop-blur-md bg-slate-100/60 dark:bg-black/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('home_cat_title')}</h2>
@@ -289,40 +229,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== TOP CITIES ===================== */}
-      <section className="relative z-10 py-16 backdrop-blur-md bg-slate-100/60 dark:bg-black/30 border-y border-slate-200/80 dark:border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('home_cities_title')}</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">{t('home_cities_sub')}</p>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {TOP_CITIES.map((city) => (
-              <Link
-                key={city.name}
-                href={city.href}
-                className="group relative overflow-hidden rounded-2xl aspect-[4/3] block backdrop-blur-md bg-white/80 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 shadow-glass-card hover:shadow-glass-card-hover transition-all duration-300"
-              >
-                <Image
-                  src={city.img}
-                  alt={city.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-900/95 via-dark-900/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="text-white font-black text-lg leading-tight">{city.name}</div>
-                  <div className="text-brand-300 text-xs font-semibold">{city.count}</div>
-                </div>
-                <div className="absolute top-3 right-3 p-1.5 rounded-lg backdrop-blur-md bg-black/60 border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-3.5 h-3.5 text-brand-300" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===================== WHY PLOTIFY ===================== */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -331,26 +237,51 @@ export default function HomePage() {
             <p className="text-slate-600 dark:text-slate-400 text-sm mt-2 max-w-xl mx-auto">{t('home_why_sub')}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {WHY_ITEMS.map((w) => (
-              <div
-                key={w.title}
-                className="flex gap-4 p-5 rounded-2xl backdrop-blur-md bg-white/80 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 shadow-glass-card card-hover"
-              >
-                <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${w.bg}`}>
-                  <w.icon className={`w-5 h-5 ${w.color}`} />
+            {WHY_ITEMS.map((w) => {
+              const isPloti = (w as any).action === 'ploti-ai';
+              return (
+                <div
+                  key={w.title}
+                  onClick={() => {
+                    if (isPloti) {
+                      window.dispatchEvent(new Event('ploti-open'));
+                    }
+                  }}
+                  className={`flex gap-4 p-5 rounded-2xl backdrop-blur-md bg-white/80 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 shadow-glass-card card-hover transition-all ${
+                    isPloti ? 'cursor-pointer hover:border-brand-500/60 hover:shadow-glow-sm group' : ''
+                  }`}
+                >
+                  <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 p-1.5 ${w.bg}`}>
+                    {(w as any).avatarImg ? (
+                      <img
+                        src={(w as any).avatarImg}
+                        alt={w.title}
+                        className="w-full h-full object-contain drop-shadow transition-transform group-hover:scale-110"
+                      />
+                    ) : (
+                      <w.icon className={`w-5 h-5 ${w.color}`} />
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+                      {w.title}
+                      {isPloti && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30">
+                          {lang === 'BN' ? 'চ্যাট করুন →' : 'Chat →'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{w.desc}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white mb-1">{w.title}</div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{w.desc}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ===================== RECENT LISTINGS ===================== */}
-      <section className="relative z-10 py-16 backdrop-blur-md bg-slate-100/60 dark:bg-black/30 border-y border-slate-200/80 dark:border-white/10">
+      <section className="relative z-10 py-16 backdrop-blur-md bg-slate-100/60 dark:bg-black/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-10">
             <div>
@@ -370,37 +301,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== TESTIMONIALS ===================== */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t('home_testimonials_title')}</h2>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">{t('home_testimonials_sub')}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((tItem) => (
-              <div
-                key={tItem.name}
-                className="p-6 rounded-2xl backdrop-blur-md bg-white/80 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 shadow-glass-card card-hover"
-              >
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: tItem.stars }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  ))}
-                </div>
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-5 italic">"{tItem.text}"</p>
-                <div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white">{tItem.name}</div>
-                  <div className="text-xs text-brand-600 dark:text-brand-400 mt-0.5">{tItem.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===================== CTA ===================== */}
-      <section className="relative z-10 py-20 backdrop-blur-md bg-slate-100/60 dark:bg-black/30 border-y border-slate-200/80 dark:border-white/10">
+      <section className="relative z-10 py-20 backdrop-blur-md bg-slate-100/60 dark:bg-black/30">
         <div className="max-w-4xl mx-auto px-4">
           <div className="backdrop-blur-xl bg-white/90 dark:bg-black/40 border border-slate-200/80 dark:border-white/20 rounded-3xl p-8 sm:p-12 text-center shadow-glass-modal">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 mb-6 shadow-glow">

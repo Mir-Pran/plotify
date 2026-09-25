@@ -355,6 +355,11 @@ export class DataStore {
     const normalizedEmail = email.toLowerCase().trim();
     // Strict Admin Credentials
     if (normalizedEmail === 'support@plotify.store') {
+      const creds = this.getCredentials();
+      const storedHash = creds[normalizedEmail];
+      if (storedHash) {
+        return await verifyPassword(password, storedHash);
+      }
       return password === 'Plotify@Support';
     }
     const creds = this.getCredentials();
@@ -589,17 +594,100 @@ export class DataStore {
     return !isSaved;
   }
 
-  // Ploti AI Logs
+  // Ploti AI Logs Deduplication & Management
+  static deduplicateLogs(logs: AiLogItem[]): AiLogItem[] {
+    if (!Array.isArray(logs)) return [];
+    const result: AiLogItem[] = [];
+    const seenIds = new Set<string>();
+
+    for (const item of logs) {
+      if (!item || !item.query) continue;
+      if (item.id && seenIds.has(item.id)) continue;
+
+      // Check if duplicate exists by matching user, query, and close timestamps (within 25 seconds)
+      const existingMatch = result.find(existing => {
+        if (
+          existing.query?.trim().toLowerCase() === item.query?.trim().toLowerCase() &&
+          existing.user?.trim().toLowerCase() === item.user?.trim().toLowerCase()
+        ) {
+          if (existing.timestamp && item.timestamp) {
+            const t1 = new Date(existing.timestamp).getTime();
+            const t2 = new Date(item.timestamp).getTime();
+            if (!isNaN(t1) && !isNaN(t2) && Math.abs(t1 - t2) < 25000) {
+              return true;
+            }
+          }
+          if (existing.time && item.time) {
+            const [h1, m1] = existing.time.split(':');
+            const [h2, m2] = item.time.split(':');
+            if (h1 === h2 && m1 === m2) {
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+
+      if (!existingMatch) {
+        if (item.id) seenIds.add(item.id);
+        result.push(item);
+      } else {
+        // Merge richer details into existing entry if missing
+        if (!existingMatch.response && item.response) {
+          existingMatch.response = item.response;
+        }
+        if (item.provider && (!existingMatch.provider || existingMatch.provider === 'gemini-2.0-flash')) {
+          existingMatch.provider = item.provider;
+        }
+      }
+    }
+
+    return result;
+  }
+
   static getAiLogs(): AiLogItem[] {
     if (typeof window === 'undefined') return INITIAL_AI_LOGS;
     try {
       const stored = localStorage.getItem(AI_LOGS_STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return this.deduplicateLogs(parsed);
+        }
+      }
       localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(INITIAL_AI_LOGS));
       return INITIAL_AI_LOGS;
     } catch {
       return INITIAL_AI_LOGS;
     }
+  }
+
+  static saveServerAiLog(serverLog: AiLogItem): AiLogItem {
+    if (!serverLog || !serverLog.query) return serverLog;
+    const current = this.getAiLogs();
+
+    // Check if duplicate or existing entry exists
+    const existingIndex = current.findIndex(l =>
+      l.id === serverLog.id ||
+      (
+        l.query?.trim().toLowerCase() === serverLog.query?.trim().toLowerCase() &&
+        l.user?.trim().toLowerCase() === (serverLog.user || 'Guest User').trim().toLowerCase() &&
+        Math.abs(new Date(serverLog.timestamp || 0).getTime() - new Date(l.timestamp || 0).getTime()) < 25000
+      )
+    );
+
+    if (existingIndex !== -1) {
+      current[existingIndex] = { ...current[existingIndex], ...serverLog };
+    } else {
+      current.unshift(serverLog);
+    }
+
+    const deduped = this.deduplicateLogs(current).slice(0, 100);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(deduped));
+      window.dispatchEvent(new Event('plotify_ai_logs_updated'));
+    }
+    return serverLog;
   }
 
   static recordAiLog(user: string, query: string, latencyMs?: number, response?: string, provider?: string): AiLogItem {
@@ -608,7 +696,26 @@ export class DataStore {
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const latencyFormatted = latencyMs !== undefined 
       ? `${(latencyMs / 1000).toFixed(2)}s` 
-      : `${(Math.random() * 0.4 + 0.8).toFixed(2)}s`;
+      : '1.10s';
+
+    // Deduplication check: if a matching log for this user & query exists within the last 25 seconds, update it
+    const existingMatch = logs.find(l =>
+      l.query?.trim().toLowerCase() === query.trim().toLowerCase() &&
+      l.user?.trim().toLowerCase() === (user || 'Guest User').trim().toLowerCase() &&
+      Math.abs(now.getTime() - new Date(l.timestamp || 0).getTime()) < 25000
+    );
+
+    if (existingMatch) {
+      if (response && !existingMatch.response) existingMatch.response = response;
+      if (provider) existingMatch.provider = provider;
+      if (latencyFormatted) existingMatch.latency = latencyFormatted;
+      if (typeof window !== 'undefined') {
+        const deduped = this.deduplicateLogs(logs).slice(0, 100);
+        localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(deduped));
+        window.dispatchEvent(new Event('plotify_ai_logs_updated'));
+      }
+      return existingMatch;
+    }
 
     const newLog: AiLogItem = {
       id: String(Date.now()),
@@ -618,12 +725,13 @@ export class DataStore {
       time: timeStr,
       status: 'success',
       latency: latencyFormatted,
-      provider: provider || 'gemini-2.0-flash',
+      provider: provider || 'Google Gemini',
       timestamp: now.toISOString(),
     };
     logs.unshift(newLog);
+    const deduped = this.deduplicateLogs(logs).slice(0, 100);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(logs.slice(0, 100)));
+      localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(deduped));
       window.dispatchEvent(new Event('plotify_ai_logs_updated'));
     }
     return newLog;
@@ -637,14 +745,11 @@ export class DataStore {
         const data = await res.json();
         if (Array.isArray(data.logs) && data.logs.length > 0) {
           const current = this.getAiLogs();
-          const existingIds = new Set(current.map(l => l.id));
-          const toAdd = data.logs.filter((l: AiLogItem) => !existingIds.has(l.id));
-          if (toAdd.length > 0) {
-            const merged = [...toAdd, ...current].slice(0, 100);
-            localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(merged));
-            window.dispatchEvent(new Event('plotify_ai_logs_updated'));
-            return merged;
-          }
+          // Merge and strictly deduplicate both server and local logs
+          const merged = this.deduplicateLogs([...data.logs, ...current]).slice(0, 100);
+          localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify(merged));
+          window.dispatchEvent(new Event('plotify_ai_logs_updated'));
+          return merged;
         } else if (Array.isArray(data.logs) && data.logs.length === 0) {
           // Server explicitly has 0 logs (e.g. after deletion)
           localStorage.setItem(AI_LOGS_STORAGE_KEY, JSON.stringify([]));

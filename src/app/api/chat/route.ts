@@ -4,7 +4,9 @@ import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@/lib/supabase/server';
-import { ChatHistoryMessage } from '@/lib/types';
+import { ChatHistoryMessage, User } from '@/lib/types';
+import { hashPassword } from '@/lib/auth-crypto';
+import { saveServerUser } from '@/lib/server-auth-store';
 
 // Global server-side AI log & chat history registry (persists during server runtime)
 const globalStore = global as unknown as {
@@ -29,21 +31,48 @@ if (!globalStore.__plotifyChatHistory) {
   globalStore.__plotifyChatHistory = [];
 }
 
-// Highly optimized, comprehensive real estate prompt with authentic Bangladesh real estate context
-const SYSTEM_PROMPT = `You are Ploti AI (প্লটি এআই), the expert AI real estate assistant for Plotify Bangladesh (plotify.store) — the premier verified property platform.
-- Language: If the user asks in Bengali (বাংলা) or Banglish, answer in polite, natural, and fluent Bengali. Otherwise in English.
-- Output & Completeness: Always provide complete, thorough, and well-structured answers using clean Markdown, bold headers, and bullet points. Never cut off or leave sentences unfinished.
-- Key Bangladesh Real Estate Facts:
-  • Land Measurement: 1 Katha = 720 sq ft, 20 Katha = 1 Bigha, 1 Decimal / Shotangso = 435.6 sq ft.
-  • Essential Document Verification: CS, SA, RS, BS/City Survey Porcha/Khatian, Bia Dolil (chain of title deeds), Mutation (নামজারি / DCR), up-to-date Land Development Tax (Khajna receipt), Non-Encumbrance Certificate (NEC), and RAJUK / CDA approved building plan.
-  • Utilities: Government Titas Gas pipeline connection (high demand asset in Dhaka), WASA water supply, DESCO/DPDC electric meter, generator backup.
-  • Plotify Official Listing Activation Fees:
-    - Flats & Apartments: ৳1,000 – ৳5,000
-    - Houses & Duplexes: ৳1,000 – ৳5,000
-    - Plots & Land: ৳700 – ৳4,500
-    - Mess, Rooms & Sublets: ৳500 – ৳2,000
-  • Prime Locations: Gulshan, Banani, Baridhara, Dhanmondi, Bashundhara R/A, Uttara, Mirpur, Purbachal (300ft Expressway), Aftabnagar, Mohammadpur.
-Direct users to explore 100% verified listings at plotify.store/properties. Maintain conversational context across previous questions seamlessly.`;
+// System prompt for Ploti AI meeting all required rules
+const SYSTEM_PROMPT = `You are "Ploti AI", a friendly and helpful real estate assistant for "Plotify" (plotify.store).
+
+MANDATORY INSTRUCTIONS:
+
+1. ALWAYS ADDRESS THE USER AS "SIR":
+   - In EVERY SINGLE response, you MUST address the user as "Sir".
+   - Start your response directly addressing the user as Sir.
+   - Examples:
+     • "Sir, to list your property on Plotify, visit plotify.store/properties/new..."
+     • "Sir, here are the available plots and flats in Dhaka, Rajshahi, and Chittagong..."
+     • "Sir, I can help you find verified land..."
+   - In Bengali/Banglish: Start with "Sir (স্যার)," or "Sir," and maintain respectful tone throughout.
+
+2. STRAIGHTFORWARD, DIRECT & CONCISE ANSWERS:
+   - Your answers must be completely straightforward, direct, concise, and helpful.
+   - Strictly avoid fluff, filler words, repetitive pleasantries, or wordy conversational intros.
+   - Get straight to the point immediately after saying "Sir,".
+
+3. RESPONSE FORMATTING:
+   - Keep answers concise, direct, and well-structured (maximum 2-3 short paragraphs or clean bullet points).
+   - Never cut off mid-sentence. Always complete your markdown, lists, and sentences cleanly.
+
+4. KNOWLEDGE BASE & REAL ESTATE GUIDANCE:
+   - Help users find plots, flats, and land in areas like Dhaka (Gulshan, Banani, Uttara, Bashundhara, Purbachal), Rajshahi, Chittagong, Sylhet, and other districts across Bangladesh.
+   - Guide users on how to list properties on Plotify at plotify.store/properties or plotify.store/properties/new:
+     • Step 1: Sign in and click "Post Ad" (plotify.store/properties/new).
+     • Step 2: Select category (Flat, Plot, House, Commercial), fill in location, price, and specs.
+     • Step 3: Upload photos and submit for admin verification.
+   - Quick Facts:
+     • 1 Katha = 720 sq ft, 20 Katha = 1 Bigha, 1 Decimal = 435.6 sq ft.
+     • Documents: Porcha (CS/SA/RS/BS), Bia Dolil, Mutation (Namjari/DCR), Land Tax (Khajna), NEC, RAJUK/CDA approval.
+     • Official Activation Fees: Flats & Houses: ৳1,000–৳5,000 | Plots & Land: ৳700–৳4,500 | Mess/Sublet: ৳500–৳2,000.
+
+5. ACCOUNT CREATION VIA AI CHAT:
+   - If a user faces issues signing up, asks you to create an account, or asks how to register:
+     • Politely ask them to provide their 3 details:
+       1. Full Name
+       2. Email Address
+       3. Phone Number (01XXXXXXXXX)
+     • Example: "Sir, I can set up your standard Plotify personal account directly. Please provide your:\n1. Full Name\n2. Email Address\n3. Phone Number\nSir, once you provide these details, your account will be activated immediately."
+   - When details are provided, the backend provisions a standard personal account (unverified) with a temporary password. Note that personal accounts can browse and save properties, and can upgrade to a verified business seller account later by submitting NID documents from their dashboard. Always instruct them to log in at plotify.store/login.`;
 
 function getEnvKey(keyName: string): string | undefined {
   if (process.env[keyName] && process.env[keyName]?.trim() !== '') {
@@ -64,6 +93,128 @@ function getEnvKey(keyName: string): string | undefined {
   return undefined;
 }
 
+// Automated Backend Account Creation (Requirement 4)
+async function createAccountViaChat(
+  fullName: string,
+  email: string,
+  mobile: string
+): Promise<{ success: boolean; user?: User; tempPassword?: string; error?: string }> {
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanMobile = mobile.trim();
+  const cleanName = fullName.trim() || 'Valued Client';
+  const tempPassword = `Plotify@${Math.floor(1000 + Math.random() * 9000)}`;
+  let userId = `user-${Date.now()}`;
+
+  // 1. Supabase Auth & Profile creation
+  try {
+    const supabase = await createClient();
+    const { data: supaData, error: supaErr } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: tempPassword,
+      options: {
+        data: {
+          full_name: cleanName,
+          phone: cleanMobile,
+          role: 'personal',
+          is_verified: false,
+          verification_status: 'unverified',
+        },
+      },
+    });
+
+    if (!supaErr && supaData?.user?.id) {
+      userId = supaData.user.id;
+    }
+
+    await supabase.from('profiles').upsert({
+      id: userId,
+      email: cleanEmail,
+      full_name: cleanName,
+      phone: cleanMobile,
+      role: 'personal',
+      is_verified: false,
+      verification_status: 'unverified',
+      upgrade_status: 'none',
+      updated_at: new Date().toISOString(),
+    });
+  } catch (supaErr) {
+    console.warn('[Chat Account Provisioning] Supabase note:', supaErr);
+  }
+
+  // 2. Hash temporary password & save to server auth store for instant login
+  try {
+    const passwordHash = await hashPassword(tempPassword);
+    const newUser: User = {
+      id: userId,
+      email: cleanEmail,
+      fullName: cleanName,
+      mobile: cleanMobile,
+      role: 'personal',
+      accountType: 'personal',
+      createdAt: new Date().toISOString(),
+      isVerified: false,
+      verificationStatus: 'unverified',
+      upgradeStatus: 'none',
+    };
+    saveServerUser(newUser, passwordHash);
+    return { success: true, user: newUser, tempPassword };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to hash password' };
+  }
+}
+
+// Extract Name, Email, and Phone Number for Account Creation (Requirement 4)
+function extractRegistrationDetails(
+  text: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>
+): { fullName: string; email: string; mobile: string } | null {
+  const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  if (!emailMatch) return null;
+  const email = emailMatch[0].toLowerCase().trim();
+
+  // Match Bangladeshi phone number format
+  const phoneMatch = text.match(/(?:\+?8801|01)[3-9]\d{8}/) || text.match(/\b01\d{9}\b/);
+  if (!phoneMatch) return null;
+  const mobile = phoneMatch[0].replace(/^\+88/, '');
+
+  const combinedHistory = `${history.slice(-3).map(m => m.content).join('\n')}\n${text}`.toLowerCase();
+  const hasAccountIntent =
+    /create|sign\s*up|register|account|open|problem|issue|help|details|login|password|নাম|ইমেইল|ফোন|অ্যাকাউন্ট/i.test(
+      combinedHistory
+    );
+
+  if (!hasAccountIntent) return null;
+
+  let fullName = '';
+  const labeledNameMatch = text.match(/(?:full\s*name|name|নাম)\s*(?:is|:|-)?\s*([A-Za-z\s\u0980-\u09FF]{2,35})/i);
+  if (labeledNameMatch && labeledNameMatch[1]?.trim()) {
+    fullName = labeledNameMatch[1].trim().split(/[\n,;]|email|phone|mobile|01\d/i)[0].trim();
+  }
+
+  if (!fullName || fullName.length < 2) {
+    const chunks = text.split(/[\n,;]/).map(c => c.trim());
+    for (const c of chunks) {
+      if (
+        c &&
+        !c.includes('@') &&
+        !/\d{5,}/.test(c) &&
+        !/create|account|sign|please|sir|details|here/i.test(c) &&
+        c.length >= 2 &&
+        c.length <= 35
+      ) {
+        fullName = c.replace(/^(my\s+name\s+is|i\s+am|name\s*:)\s*/i, '').trim();
+        if (fullName) break;
+      }
+    }
+  }
+
+  if (!fullName || fullName.length < 2) {
+    fullName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  return { fullName, email, mobile };
+}
+
 function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN'): string {
   const q = userQuery.toLowerCase();
   const isBengali =
@@ -74,32 +225,75 @@ function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN')
     q.includes('khujchi') ||
     q.includes('koto');
 
+  // Account creation inquiry (Requirement 4 & 5)
+  if (
+    /account|sign\s*up|signup|signing\s*up|register|registration|trouble.*sign|problem.*sign|issue.*sign|cant.*sign|cannot.*sign|open.*acc|make.*acc|অ্যাকাউন্ট|সাইন\s*আপ|রেজিস্টার/i.test(
+      q
+    ) ||
+    /create.*acc/i.test(q)
+  ) {
+    if (isBengali) {
+      return `Sir (স্যার), আমি সরাসরি আপনার প্লটিফাই অ্যাকাউন্ট তৈরি করে দিতে পারি। অনুগ্রহ করে আপনার:\n1. পুরো নাম\n2. ইমেইল ঠিকানা\n3. ফোন নম্বর (০১XXXXXXXXX)\n\nSir, তথ্য পেলেই সাথে সাথে আপনার অ্যাকাউন্ট সক্রিয় করে লগইন তথ্য প্রদান করা হবে।`;
+    }
+    return `Sir, I can set up your Plotify account directly. Please provide your:\n1. Full Name\n2. Email Address\n3. Phone Number (01XXXXXXXXX)\n\nSir, once provided, I will create your account immediately and give you your login credentials.`;
+  }
+
+  // How to list property on Plotify
+  if (
+    q.includes('list') ||
+    q.includes('post ad') ||
+    q.includes('how to post') ||
+    q.includes('advertise') ||
+    q.includes('sell property') ||
+    q.includes('বিজ্ঞাপন') ||
+    q.includes('লিস্টিং')
+  ) {
+    if (isBengali) {
+      return `Sir, প্লটিফাইয়ে আপনার সম্পত্তির বিজ্ঞাপন দিতে:\n1. আপনার অ্যাকাউন্টে লগইন করে **Post Ad** অপশনে যান বা [plotify.store/properties/new](https://plotify.store/properties/new) পেজে যান।\n2. ফ্ল্যাট, প্লট বা বাড়ি নির্বাচন করে লোকেশন, মূল্য ও বিবরণ দিন।\n3. স্পষ্ট ছবি আপলোড করে সাবমিট করুন। এডমিন যাচাই শেষে বিজ্ঞাপনটি লাইভ হবে।\n\nSir, সব ভেরিফাইড প্রপার্টি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
+    }
+    return `Sir, to list your property on Plotify:\n1. Log in to your account and click **Post Ad** or visit [plotify.store/properties/new](https://plotify.store/properties/new).\n2. Select your category (Flat, Plot, House, Commercial) and enter the location, pricing, and details.\n3. Upload clear photos and submit for admin verification.\n\nSir, once approved, your listing goes live at [plotify.store/properties](https://plotify.store/properties) with a Verified badge.`;
+  }
+
+  // Listing activation fees
   if (q.includes('fee') || q.includes('cost') || q.includes('ফি') || q.includes('খরচ') || q.includes('charge')) {
     if (isBengali) {
-      return `💰 **প্লটিফাই অফিসিয়াল লিস্টিং অ্যাক্টিভেশন ফি:**\n\n• **ফ্ল্যাট ও অ্যাপার্টমেন্ট:** ৳ ১,০০০ – ৳ ৫,০০০\n• **বাড়ি / ডুপ্লেক্স:** ৳ ১,০০০ – ৳ ৫,০০০\n• **জমি ও প্লট:** ৳ ৭০০ – ৳ ৪,৫০০\n• **মেস / সাবলেট:** ৳ ৫০০ – ৳ ২,০০০\n\nফি প্রপার্টির মূল্যের ওপর ভিত্তি করে নির্ধারিত হয়। এডমিন যাচাইকরণের পর লিস্টিংয়ে ভেরিফাইড ব্যাজ সক্রিয় হয়!`;
+      return `Sir, প্লটিফাই অফিসিয়াল লিস্টিং অ্যাক্টিভেশন ফি তালিকা:\n• **ফ্ল্যাট ও বাড়ি:** ৳১,০০০ – ৳৫,০০০\n• **জমি ও প্লট:** ৳৭০০ – ৳৪,৫০০\n• **মেস ও সাবলেট:** ৳৫০০ – ৳২,০০০\n\nSir, প্রপার্টির মূল্যের ওপর ভিত্তি করে ফি নির্ধারিত হয় এবং এডমিন যাচাইয়ের পর ভেরিফাইড ব্যাজ কার্যকর হয়।`;
     }
-    return `💰 **Official Plotify Listing Activation Fee Schedule:**\n\n• **Flats & Apartments:** ৳ 1,000 – ৳ 5,000\n• **Houses / Duplex:** ৳ 1,000 – ৳ 5,000\n• **Plots & Land:** ৳ 700 – ৳ 4,500\n• **Mess / Sublet:** ৳ 500 – ৳ 2,000\n\nFees are scaled transparently by property value. All approved listings receive a 100% Verified badge!`;
+    return `Sir, here is the official Plotify listing activation fee schedule:\n• **Flats & Houses:** ৳1,000 – ৳5,000\n• **Plots & Land:** ৳700 – ৳4,500\n• **Mess & Sublet:** ৳500 – ৳2,000\n\nSir, activation fees are scaled by property value. All verified listings receive a 100% Verified badge.`;
   }
 
-  if (q.includes('gulshan') || q.includes('গুলশান') || q.includes('banani') || q.includes('বনানী')) {
+  // Flats in Gulshan, Banani, Dhaka
+  if (q.includes('gulshan') || q.includes('গুলশান') || q.includes('banani') || q.includes('বনানী') || q.includes('dhaka') || q.includes('ঢাকা') || q.includes('flat') || q.includes('ফ্ল্যাট')) {
     if (isBengali) {
-      return `🏢 **গুলশান ও বনানীতে ভেরিফাইড প্রপার্টি:**\n\n• **গুলশান-২ লেকভিউ লাক্সারি অ্যাপার্টমেন্ট:** ৪ বেড, ৩৮৫০ বর্গফুট, তিতাস গ্যাস ও সার্বক্ষণিক ব্যাকআপ। মূল্য: ৳ ৬.৮০ কোটি।\n• **বনানী ব্লক এফ প্রিমিয়াম ফ্ল্যাট:** ৩ বেড, ২১০০ বর্গফুট।\n\nপ্লটিফাই প্রপার্টিজ পেজে সরাসরি ফিল্টার করে দেখুন!`;
+      return `Sir, গুলশান, বনানী ও ঢাকায় ৩-৪ বেডের লাক্সারি ফ্ল্যাট ৳২.৫ কোটি থেকে ৳৭ কোটির মধ্যে পাওয়া যাচ্ছে (তিতাস গ্যাস ও সার্বক্ষণিক ব্যাকআপসহ)।\n\nSir, সব ভেরিফাইড প্রপার্টি সরাসরি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
     }
-    return `🏢 **Verified Properties in Gulshan & Banani:**\n\n• **Gulshan-2 Ultra Luxury Lakeview:** 4-Bed, 3,850 sq ft with original Titas Gas. Price: ৳ 6.80 Crore.\n• **Banani Block F:** 3-Bed ready apartment, 2,100 sq ft.\n\nExplore direct owner/developer listings at plotify.store/properties!`;
+    return `Sir, verified 3-4 bed luxury flats in Gulshan, Banani, and Dhaka range from ৳2.5 Crore to ৳7 Crore, equipped with authentic Titas gas and generator backup.\n\nSir, you can explore all verified listings directly at [plotify.store/properties](https://plotify.store/properties).`;
   }
 
-  if (q.includes('purbachal') || q.includes('পূর্বাচল') || q.includes('plot') || q.includes('land') || q.includes('জমি') || q.includes('প্লট')) {
+  // Plots and Land in Rajshahi, Chittagong, Purbachal
+  if (
+    q.includes('purbachal') ||
+    q.includes('পূর্বাচল') ||
+    q.includes('plot') ||
+    q.includes('land') ||
+    q.includes('rajshahi') ||
+    q.includes('chittagong') ||
+    q.includes('চট্টগ্রাম') ||
+    q.includes('রাজশাহী') ||
+    q.includes('জমি') ||
+    q.includes('প্লট')
+  ) {
     if (isBengali) {
-      return `🌿 **পূর্বাচল ও ঢাকার আশপাশে প্লট ও জমি:**\n\n• **পূর্বাচল সেক্টর ১৭:** ৫ কাঠা প্লট, ৩০০ ফিট এক্সপ্রেসওয়ের নিকটে। মূল্য: ৳ ৮৫ লাখ (প্রতি কাঠা ৳ ১৭ লাখ)। রাজউক অনুমোদিত।\n• **বসুন্ধরা ব্লক এম:** ৩ কাঠা রেডি প্লট।\n\n১ কাঠা = ৭২০ বর্গফুট, ২০ কাঠা = ১ বিঘা হিসেবে হিসাব করা হয়।`;
+      return `Sir, ঢাকা (পূর্বাচল, বসুন্ধরা), চট্টগ্রাম ও রাজশাহীতে অনুমোদিত প্লট ও জমি পাওয়া যাচ্ছে। পূর্বাচলে ৩-৫ কাঠার প্লট প্রতি কাঠা ৳১৫-২৫ লাখ (১ কাঠা = ৭২০ বর্গফুট)।\n\nSir, ভেরিফাইড প্লটের তালিকা দেখতে [plotify.store/properties](https://plotify.store/properties) পেজ দেখুন।`;
     }
-    return `🌿 **Prime Plots in Purbachal New Town:**\n\n• **Purbachal Sector 17:** 5 Katha plot near 300ft Expressway. Price: ৳ 85 Lakh (৳ 17 Lakh/Katha).\n• **Bashundhara R/A Block M:** 3 Katha ready plot.\n\nAll plots feature clear boundary demarcation and verified documents!`;
+    return `Sir, verified residential and commercial plots are available across Dhaka (Purbachal, Bashundhara R/A), Chittagong, and Rajshahi. In Purbachal Sector 17, RAJUK-approved plots range from ৳15–25 Lakh per Katha (1 Katha = 720 sq ft).\n\nSir, please explore verified land listings at [plotify.store/properties](https://plotify.store/properties).`;
   }
 
   if (isBengali) {
-    return `🤖 **আসসালামু আলাইকুম! আমি প্লটি এআই:**\n\nপ্লটিফাই বাংলাদেশে আপনাকে স্বাগতম। আমি আপনাকে সাহায্য করতে পারি:\n• ঢাকা ও সারা দেশের ফ্ল্যাট, জমি ও বাড়ি খুঁজতে\n• নির্দিষ্ট বাজেট ও তিতাস গ্যাস সংযোগসহ ফিল্টার করতে\n• লিস্টিং অ্যাক্টিভেশন ফি সংক্রান্ত তথ্য জানতে\n\nআপনি কোন এলাকায় প্রপার্টি খুঁজছেন?`;
+    return `Sir, আমি প্লটি এআই (Ploti AI), প্লটিফাইয়ে আপনার রিয়েল এস্টেট সহকারী। ঢাকা, চট্টগ্রাম, রাজশাহীসহ সারা দেশে ফ্ল্যাট, জমি খোঁজা, প্রপার্টি লিস্টিং বা অ্যাকাউন্ট তৈরিতে আমি প্রস্তুত। কীভাবে সাহায্য করতে পারি, Sir?`;
   }
 
-  return `🤖 **Hello! I'm Ploti AI — Your Real Estate Assistant on Plotify Bangladesh:**\n\nI can help you:\n• Find flats & plots in Gulshan, Banani, Uttara, Bashundhara & Purbachal\n• Understand listing activation fees (৳ 500–5,000)\n• Verify utilities (Titas Gas, WASA) and RAJUK approvals\n\nHow can I assist your property search today?`;
+  return `Sir, I am Ploti AI, your friendly and helpful real estate assistant for Plotify. I can help you find verified plots, flats, and land in Dhaka, Rajshahi, Chittagong, guide property listings, or create an account for you. How may I assist you, Sir?`;
 }
 
 // Fetch previous messages for session context memory (up to last 10 messages)
@@ -228,9 +422,41 @@ async function persistChatTurn(
 }
 
 export async function GET() {
+  const rawLogs = globalStore.__plotifyAiLogs || [];
+  // Server-side deduplication check: eliminate duplicate entries with same user, query, and close timestamps
+  const uniqueLogs: typeof rawLogs = [];
+  const seenIds = new Set<string>();
+
+  for (const l of rawLogs) {
+    if (!l || !l.query) continue;
+    if (seenIds.has(l.id)) continue;
+
+    const isDup = uniqueLogs.some(existing => {
+      if (
+        existing.query.trim().toLowerCase() === l.query.trim().toLowerCase() &&
+        existing.user.trim().toLowerCase() === l.user.trim().toLowerCase()
+      ) {
+        const t1 = new Date(existing.timestamp).getTime();
+        const t2 = new Date(l.timestamp).getTime();
+        if (!isNaN(t1) && !isNaN(t2) && Math.abs(t1 - t2) < 25000) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    if (!isDup) {
+      seenIds.add(l.id);
+      uniqueLogs.push(l);
+    }
+  }
+
+  // Update server cache to clean up any duplicates
+  globalStore.__plotifyAiLogs = uniqueLogs;
+
   return NextResponse.json({
-    logs: globalStore.__plotifyAiLogs || [],
-    total: globalStore.__plotifyAiLogs?.length || 0,
+    logs: uniqueLogs,
+    total: uniqueLogs.length,
     timestamp: new Date().toISOString(),
   });
 }
@@ -308,6 +534,27 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Check for Account Creation Details (Requirement 4)
+    const regDetails = extractRegistrationDetails(lastUserMessage, historyTurns);
+    let createdAccount: { user: User; tempPassword: string } | null = null;
+    let accountCreationReply: string | null = null;
+
+    if (regDetails) {
+      const result = await createAccountViaChat(regDetails.fullName, regDetails.email, regDetails.mobile);
+      if (result.success && result.user && result.tempPassword) {
+        createdAccount = { user: result.user, tempPassword: result.tempPassword };
+        const isBn =
+          /[\u0980-\u09FF]/.test(lastUserMessage) ||
+          lastUserMessage.toLowerCase().includes('amar') ||
+          lastUserMessage.toLowerCase().includes('koren');
+        if (isBn) {
+          accountCreationReply = `Sir, আপনার প্লটিফাই ব্যক্তিগত (Personal) অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে!\n\nলগইন তথ্যাদি:\n• **নাম:** ${result.user.fullName}\n• **ইমেইল:** ${result.user.email}\n• **অস্থায়ী পাসওয়ার্ড:** \`${result.tempPassword}\`\n• **ফোন নম্বর:** ${result.user.mobile}\n• **অ্যাকাউন্ট টাইপ:** সাধারণ ব্যক্তিগত (Personal)\n\nSir, আপনি এখনই [plotify.store/login](https://plotify.store/login) পেজে গিয়ে সরাসরি লগইন করতে পারেন। পরবর্তীতে প্রপার্টি বিজ্ঞাপন লিস্টিংয়ের জন্য ড্যাশবোর্ড থেকে এনআইডি ও প্রয়োজনীয় তথ্য জমা দিয়ে বিজনেস অ্যাকাউন্টে রূপান্তর করতে পারবেন।`;
+        } else {
+          accountCreationReply = `Sir, your standard Plotify personal account has been successfully created!\n\nHere are your login credentials:\n• **Full Name:** ${result.user.fullName}\n• **Email:** ${result.user.email}\n• **Temporary Password:** \`${result.tempPassword}\`\n• **Phone Number:** ${result.user.mobile}\n• **Account Type:** Standard Personal\n\nSir, you can log in immediately at [plotify.store/login](https://plotify.store/login). Please update your password in profile settings after logging in. To list properties as a business seller later, you can submit NID verification from your dashboard.`;
+        }
+      }
+    }
+
     const geminiKey = getEnvKey('GEMINI_API_KEY');
     const openAiKey = getEnvKey('OPENAI_API_KEY');
 
@@ -318,13 +565,15 @@ export async function POST(req: NextRequest) {
       let aiReply: string | null = null;
       let providerUsed = 'ploti-domain-ai';
 
-      if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
+      if (accountCreationReply) {
+        aiReply = accountCreationReply;
+        providerUsed = 'ploti-account-provisioner';
+      } else if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
         const candidateModels = [
-          'gemini-3.5-flash-lite',
-          'gemini-flash-lite-latest',
-          'gemini-3.1-flash-lite',
-          'gemini-3.5-flash',
-          'gemini-3.8-flash',
+          'gemini-2.5-flash',
+          'gemini-2.0-flash',
+          'gemini-1.5-flash',
+          'gemini-flash-latest',
         ];
         const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
         for (const model of candidateModels) {
@@ -333,7 +582,7 @@ export async function POST(req: NextRequest) {
             const res = await ai.models.generateContent({
               model,
               contents: geminiContents,
-              config: { systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 1500, temperature: 0.5 },
+              config: { systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 800, temperature: 0.4 },
             });
             if (res.text) {
               aiReply = res.text;
@@ -350,19 +599,48 @@ export async function POST(req: NextRequest) {
         aiReply = generateDynamicRealEstateResponse(lastUserMessage, 'EN');
       }
 
+      // Ensure response ALWAYS addresses user as "Sir" (Requirement 6)
+      if (aiReply && !/^sir/i.test(aiReply.trim())) {
+        aiReply = `Sir, ${aiReply.trim()}`;
+      }
+
       const responseTimeMs = Date.now() - startTime;
+      const now = new Date();
       const logItem = {
         id: String(Date.now()),
         user: userName,
         query: lastUserMessage,
         response: aiReply,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         latency: `${(responseTimeMs / 1000).toFixed(2)}s`,
         provider: providerUsed,
         status: 'success',
-        timestamp: new Date().toISOString(),
+        timestamp: now.toISOString(),
       };
-      globalStore.__plotifyAiLogs?.unshift(logItem);
+
+      if (!globalStore.__plotifyAiLogs) {
+        globalStore.__plotifyAiLogs = [];
+      }
+
+      // Deduplication check: only insert if no duplicate query exists within 20 seconds
+      const isDuplicate = globalStore.__plotifyAiLogs.some(existing => {
+        if (
+          existing.query.trim().toLowerCase() === lastUserMessage.trim().toLowerCase() &&
+          existing.user.trim().toLowerCase() === userName.trim().toLowerCase()
+        ) {
+          const t1 = new Date(existing.timestamp).getTime();
+          const t2 = now.getTime();
+          return !isNaN(t1) && Math.abs(t2 - t1) < 20000;
+        }
+        return false;
+      });
+
+      if (!isDuplicate) {
+        globalStore.__plotifyAiLogs.unshift(logItem);
+        if (globalStore.__plotifyAiLogs.length > 200) {
+          globalStore.__plotifyAiLogs.pop();
+        }
+      }
 
       // Persist turn for authenticated users
       await persistChatTurn(userId, sessionId, lastUserMessage, aiReply);
@@ -374,6 +652,7 @@ export async function POST(req: NextRequest) {
         sessionId,
         timestamp: logItem.timestamp,
         log: logItem,
+        accountCreated: createdAccount,
       });
     }
 
@@ -396,14 +675,27 @@ export async function POST(req: NextRequest) {
         let providerUsed = 'ploti-domain-ai';
         let streamSuccess = false;
 
+        // 0. Instant Automated Account Provisioning Streaming (Requirement 4)
+        if (accountCreationReply) {
+          fullReply = accountCreationReply;
+          providerUsed = 'ploti-account-provisioner';
+          streamSuccess = true;
+
+          const words = accountCreationReply.split(' ');
+          for (let i = 0; i < words.length; i++) {
+            const word = (i === 0 ? '' : ' ') + words[i];
+            sendSSE({ chunk: word, provider: providerUsed, sessionId });
+            await new Promise(r => setTimeout(r, 12));
+          }
+        }
+
         // 1. Google Gemini Streaming with Multi-turn Context Memory
-        if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
+        if (!streamSuccess && geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
           const candidateModels = [
-            'gemini-3.5-flash-lite',
-            'gemini-flash-lite-latest',
-            'gemini-3.1-flash-lite',
-            'gemini-3.5-flash',
-            'gemini-3.8-flash',
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-1.5-flash',
+            'gemini-flash-latest',
           ];
           const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
 
@@ -415,8 +707,8 @@ export async function POST(req: NextRequest) {
                 contents: geminiContents,
                 config: {
                   systemInstruction: SYSTEM_PROMPT,
-                  maxOutputTokens: 1500,
-                  temperature: 0.5,
+                  maxOutputTokens: 800,
+                  temperature: 0.4,
                 },
               });
 
@@ -454,8 +746,8 @@ export async function POST(req: NextRequest) {
                 })),
                 { role: 'user', content: lastUserMessage },
               ],
-              max_tokens: 1500,
-              temperature: 0.5,
+              max_tokens: 800,
+              temperature: 0.4,
               stream: true,
             });
 
@@ -473,7 +765,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // 3. Dynamic Real Estate Fallback Streaming
+        // 3. Dynamic Real Estate Fallback Streaming (Always addressing as Sir)
         if (!streamSuccess || !fullReply.trim()) {
           const fallbackText = generateDynamicRealEstateResponse(lastUserMessage, 'EN');
           providerUsed = 'ploti-domain-ai';
@@ -493,7 +785,7 @@ export async function POST(req: NextRequest) {
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const latencyFormatted = `${(responseTimeMs / 1000).toFixed(2)}s`;
 
-        // Record in server-side AI log registry
+        // Record in server-side AI log registry with unique deduplication check
         const logItem = {
           id: String(Date.now()),
           user: userName,
@@ -509,9 +801,25 @@ export async function POST(req: NextRequest) {
         if (!globalStore.__plotifyAiLogs) {
           globalStore.__plotifyAiLogs = [];
         }
-        globalStore.__plotifyAiLogs.unshift(logItem);
-        if (globalStore.__plotifyAiLogs.length > 200) {
-          globalStore.__plotifyAiLogs.pop();
+
+        // Deduplication check: prevent duplicate logs for identical query + user within 20s
+        const isDuplicate = globalStore.__plotifyAiLogs.some(existing => {
+          if (
+            existing.query.trim().toLowerCase() === lastUserMessage.trim().toLowerCase() &&
+            existing.user.trim().toLowerCase() === userName.trim().toLowerCase()
+          ) {
+            const t1 = new Date(existing.timestamp).getTime();
+            const t2 = now.getTime();
+            return !isNaN(t1) && Math.abs(t2 - t1) < 20000;
+          }
+          return false;
+        });
+
+        if (!isDuplicate) {
+          globalStore.__plotifyAiLogs.unshift(logItem);
+          if (globalStore.__plotifyAiLogs.length > 200) {
+            globalStore.__plotifyAiLogs.pop();
+          }
         }
 
         // Persist conversation turns (user + assistant) in database / runtime memory for authenticated user
@@ -525,6 +833,7 @@ export async function POST(req: NextRequest) {
           provider: providerUsed,
           fullReply,
           log: logItem,
+          accountCreated: createdAccount,
         });
 
         controller.close();
@@ -542,7 +851,7 @@ export async function POST(req: NextRequest) {
     const responseTimeMs = Date.now() - startTime;
     return NextResponse.json({
       reply:
-        "Hello! I am Ploti AI, your real estate assistant for Plotify Bangladesh. I'm ready to help you find flats, plots, houses, and rentals across all 64 districts.",
+        "Sir, I am Ploti AI, your friendly and helpful real estate assistant for Plotify. I'm ready to help you find plots, flats, and land across Bangladesh. How may I assist you, Sir?",
       responseTimeMs,
       provider: 'fallback',
       error: error?.message,

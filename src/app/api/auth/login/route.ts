@@ -27,7 +27,15 @@ export async function POST(request: Request) {
 
     // 2. Strict Administrator Authentication
     if (email === 'support@plotify.store') {
-      if (password !== 'Plotify@Support') {
+      const adminUpdatedHash = getServerCredentialHash(email);
+      let isValidAdmin = false;
+      if (adminUpdatedHash) {
+        isValidAdmin = await verifyPassword(password, adminUpdatedHash);
+      } else {
+        isValidAdmin = password === 'Plotify@Support';
+      }
+
+      if (!isValidAdmin) {
         return NextResponse.json(
           { success: false, error: 'Invalid email or password.' },
           { status: 401 }
@@ -56,14 +64,36 @@ export async function POST(request: Request) {
       });
 
       if (!authError && authData.user) {
+        let remoteProfile: any = null;
+        try {
+          const { data: supaProf } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+          if (supaProf) remoteProfile = supaProf;
+        } catch {}
+
+        const userRole = remoteProfile?.role || authData.user.user_metadata?.role || 'personal';
+        const isVerifiedStatus = remoteProfile?.is_verified === true || authData.user.user_metadata?.is_verified === true;
+
         const userProfile: User = {
           id: authData.user.id,
           email: authData.user.email || email,
-          fullName: authData.user.user_metadata?.full_name || email.split('@')[0],
-          mobile: authData.user.user_metadata?.phone || '01700000000',
-          role: authData.user.user_metadata?.role || 'personal',
-          createdAt: authData.user.created_at || new Date().toISOString(),
-          isVerified: true,
+          fullName: remoteProfile?.full_name || authData.user.user_metadata?.full_name || email.split('@')[0],
+          mobile: remoteProfile?.phone || authData.user.user_metadata?.phone || '01700000000',
+          role: userRole,
+          accountType: userRole,
+          organizationName: remoteProfile?.organization_name || remoteProfile?.business_name,
+          organization_name: remoteProfile?.organization_name,
+          businessName: remoteProfile?.business_name || remoteProfile?.organization_name,
+          createdAt: remoteProfile?.created_at || authData.user.created_at || new Date().toISOString(),
+          isVerified: isVerifiedStatus,
+          verificationStatus: remoteProfile?.verification_status || authData.user.user_metadata?.verification_status || (isVerifiedStatus ? 'verified' : 'unverified'),
+          upgradeStatus: remoteProfile?.upgrade_status || authData.user.user_metadata?.upgrade_status || 'none',
+          nidNumber: remoteProfile?.nid_number,
+          nidUrl: remoteProfile?.nid_url,
+          photoUrl: remoteProfile?.photo_url,
         };
 
         return NextResponse.json({ success: true, user: userProfile });

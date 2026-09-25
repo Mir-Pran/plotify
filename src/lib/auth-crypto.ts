@@ -1,5 +1,7 @@
+import bcrypt from 'bcryptjs';
+
 /**
- * Secure password hashing and verification using standard Web Crypto API (SHA-256 with salt)
+ * Secure password hashing and verification using Bcrypt & Web Crypto API
  * Cross-platform: Works in Node.js (Next.js server-side API routes) and client browsers.
  */
 
@@ -13,8 +15,23 @@ export async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+export async function hashPasswordBcrypt(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
+
 export async function verifyPassword(password: string, expectedHash: string): Promise<boolean> {
   if (!password || !expectedHash) return false;
+
+  // Check if expectedHash is a bcrypt hash ($2a$, $2b$, or $2y$)
+  if (/^\$2[aby]\$\d{2}\$/.test(expectedHash)) {
+    try {
+      return await bcrypt.compare(password, expectedHash);
+    } catch {
+      return false;
+    }
+  }
+
   const hash = await hashPassword(password);
   return hash === expectedHash;
 }

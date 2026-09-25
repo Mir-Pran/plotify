@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageCircle, Heart, Bot, X } from 'lucide-react';
+import { MessageCircle, Heart, X } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
 
 export default function FloatingActions() {
@@ -61,9 +61,17 @@ export default function FloatingActions() {
             window.dispatchEvent(new Event('panda-open'));
           }}
           title={lang === 'BN' ? 'প্লটি এআই স্মার্ট সহকারী' : 'Ploti AI Assistant'}
-          className="group w-12 h-12 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center shadow-glow-sm transition-all hover:scale-110 relative"
+          className="group w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-dark-800 p-2 border-2 border-brand-500 shadow-xl shadow-brand-500/25 flex items-center justify-center transition-all hover:scale-110 active:scale-95 relative"
         >
-          <Bot className="w-6 h-6" />
+          <img
+            src="/ploti-avatar.png"
+            alt="Ploti AI"
+            className="w-full h-full object-contain drop-shadow transition-transform group-hover:scale-105"
+          />
+          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-dark-900 rounded-full animate-pulse" />
+          <span className="absolute right-16 backdrop-blur-md bg-slate-900/90 text-white text-xs font-semibold px-2.5 py-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/20 shadow-md">
+            {lang === 'BN' ? 'প্লটি এআই' : 'Ploti AI'}
+          </span>
         </button>
       </div>
 

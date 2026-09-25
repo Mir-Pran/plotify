@@ -618,7 +618,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {user.isVerified ? (
+      {(isBusiness || isAdmin) && user.isVerified ? (
         <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-200 space-y-3">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
@@ -1045,7 +1045,7 @@ export default function DashboardPage() {
               {[
                 { id: 'overview', label: 'Business Overview', icon: LayoutDashboard },
                 { id: 'inquiries', label: `Inquiries (${inquiries.length})`, icon: MessageSquare },
-                { id: 'ai-history', label: `Ploti AI History ${chatSessions.length > 0 ? `(${chatSessions.length})` : ''}`, icon: Bot },
+                { id: 'ai-history', label: `Ploti AI History ${chatSessions.length > 0 ? `(${chatSessions.length})` : ''}`, icon: Sparkles },
                 { id: 'upgrade', label: user.isVerified ? 'Verification (Verified)' : 'NID Verification', icon: ShieldCheck },
               ].map(tab => (
                 <button
@@ -1348,7 +1348,7 @@ export default function DashboardPage() {
                 { id: 'overview', label: 'Dashboard Overview', icon: LayoutDashboard },
                 { id: 'saved', label: `Saved Properties (${savedProperties.length})`, icon: Heart },
                 { id: 'inquiries', label: `My Inquiries (${inquiries.length})`, icon: MessageSquare },
-                { id: 'ai-history', label: `Ploti AI History ${chatSessions.length > 0 ? `(${chatSessions.length})` : ''}`, icon: Bot },
+                { id: 'ai-history', label: `Ploti AI History ${chatSessions.length > 0 ? `(${chatSessions.length})` : ''}`, icon: Sparkles },
                 { id: 'upgrade', label: 'Upgrade to Business', icon: Briefcase },
               ].map(tab => (
                 <button

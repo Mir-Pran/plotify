@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { DataStore, AiLogItem } from '@/lib/data/store';
-import { Bot, Sparkles, CheckCircle2, Clock, Search, RefreshCw, Cpu, MessageSquare, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, CheckCircle2, Clock, Search, RefreshCw, Cpu, MessageSquare, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 export default function AdminAiLogsPage() {
   const [logs, setLogs] = useState<AiLogItem[]>([]);
@@ -17,18 +17,18 @@ export default function AdminAiLogsPage() {
     } catch (e) {
       console.error(e);
     }
-    setLogs(DataStore.getAiLogs());
+    setLogs(DataStore.deduplicateLogs(DataStore.getAiLogs()));
     setIsRefreshing(false);
   };
 
   useEffect(() => {
-    setLogs(DataStore.getAiLogs());
+    setLogs(DataStore.deduplicateLogs(DataStore.getAiLogs()));
     DataStore.syncAiLogsFromServer().then((synced) => {
-      if (synced) setLogs(synced);
+      if (synced) setLogs(DataStore.deduplicateLogs(synced));
     });
 
     const handler = () => {
-      setLogs(DataStore.getAiLogs());
+      setLogs(DataStore.deduplicateLogs(DataStore.getAiLogs()));
     };
 
     window.addEventListener('plotify_ai_logs_updated', handler);
@@ -53,32 +53,34 @@ export default function AdminAiLogsPage() {
     }
   };
 
-  const filtered = logs.filter((l: AiLogItem) =>
+  const dedupedLogs = DataStore.deduplicateLogs(logs);
+
+  const filtered = dedupedLogs.filter((l: AiLogItem) =>
     l.query.toLowerCase().includes(search.toLowerCase()) ||
     l.user.toLowerCase().includes(search.toLowerCase()) ||
     (l.response && l.response.toLowerCase().includes(search.toLowerCase()))
   );
 
   // Compute live stats
-  const totalCount = logs.length;
+  const totalCount = dedupedLogs.length;
   const avgLatency =
     totalCount > 0
       ? (
-        logs.reduce((acc, curr) => {
+        dedupedLogs.reduce((acc, curr) => {
           const num = parseFloat(curr.latency?.replace('s', '') || '1.1');
           return acc + (isNaN(num) ? 1.1 : num);
         }, 0) / totalCount
       ).toFixed(2) + 's'
       : '0.0s';
 
-  const lastProvider = logs[0]?.provider || 'gemini-2.0-flash';
+  const lastProvider = dedupedLogs[0]?.provider || 'Google Gemini';
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Bot className="w-6 h-6 text-brand-500" />
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-7 h-7 object-contain inline-block drop-shadow" />
             Ploti AI — Interaction Logs & Analytics
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -149,15 +151,17 @@ export default function AdminAiLogsPage() {
         <div className="space-y-3">
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-500 space-y-2">
-              <Bot className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-dark-700 border border-brand-500/20 p-2 mx-auto flex items-center justify-center">
+                <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+              </div>
               <p>No Ploti AI queries logged yet. User interactions from the website chat widget will stream here live in real-time.</p>
             </div>
           ) : (
-            filtered.map(log => {
+            filtered.map((log, idx) => {
               const isExpanded = expandedLogId === log.id;
               return (
                 <div
-                  key={log.id}
+                  key={log.id || `ai-log-${idx}`}
                   className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-700/60 border border-slate-200 dark:border-dark-500/40 text-xs space-y-2 hover:border-brand-500/30 transition-all"
                 >
                   <div className="flex items-center justify-between">
@@ -200,8 +204,8 @@ export default function AdminAiLogsPage() {
 
                       {isExpanded && (
                         <div className="mt-2 p-3.5 rounded-xl bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-900/40 text-[11px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
-                          <div className="font-bold text-brand-700 dark:text-brand-400 mb-1 flex items-center gap-1">
-                            <Bot className="w-3.5 h-3.5" /> Ploti AI Response:
+                          <div className="font-bold text-brand-700 dark:text-brand-400 mb-1 flex items-center gap-1.5">
+                            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-3.5 h-3.5 object-contain" /> Ploti AI Response:
                           </div>
                           {log.response}
                         </div>

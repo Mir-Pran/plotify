@@ -32,3 +32,7 @@ export function getServerUserByEmail(email: string): User | undefined {
 export function getServerCredentialHash(email: string): string | undefined {
   return globalStore.__plotifyServerCredentials?.get(email.toLowerCase());
 }
+
+export function updateServerCredential(email: string, passwordHash: string) {
+  globalStore.__plotifyServerCredentials?.set(email.toLowerCase(), passwordHash);
+}

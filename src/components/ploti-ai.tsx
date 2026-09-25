@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
-  Bot, X, Send, Sparkles, Minimize2, History, PlusCircle,
+  X, Send, Sparkles, Minimize2, History, PlusCircle,
   Trash2, ArrowLeft, Clock, MessageSquare, ChevronRight,
   ShieldCheck, Loader
 } from 'lucide-react';
@@ -32,8 +32,8 @@ export default function PlotiAI() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const initialMsgText = lang === 'BN'
-    ? `🤖 আসসালামু আলাইকুম! আমি **প্লটি এআই (Ploti AI)**, আপনার প্লটিফাই রিয়েল এস্টেট সহকারী।\n\nআমি আপনাকে সাহায্য করতে পারি:\n• ঢাকা, চট্টগ্রাম ও অন্যান্য জেলায় সেরা সম্পত্তি খুঁজতে\n• বাজেট ও লোকেশন অনুযায়ী যাচাইকৃত ফ্ল্যাট ফিল্টার করতে\n• বিজ্ঞাপন ফি ও সাবস্ক্রিপশন সংক্রান্ত তথ্য জানতে\n• সম্পত্তি সহজে পোস্ট ও পরিচালনা করতে\n\nআজ আপনি কী খুঁজছেন?`
-    : `🤖 Hi! I'm **Ploti AI**, your Plotify real estate assistant.\n\nI can help you:\n• Find verified properties in Dhaka, Chattogram & all 64 districts\n• Filter flats, plots, houses, and rentals by budget\n• Understand listing fees (Tk 500–5,000)\n• Guide you to list and manage your properties\n\nWhat are you looking for today?`;
+    ? `Sir (স্যার), আসসালামু আলাইকুম! আমি **প্লটি এআই (Ploti AI)**, আপনার প্লটিফাই রিয়েল এস্টেট সহকারী।\n\nআমি আপনাকে সাহায্য করতে পারি:\n• ঢাকা, চট্টগ্রাম, রাজশাহীসহ সারা দেশে প্লট, ফ্ল্যাট ও জমি খুঁজতে\n• প্লটিফাইয়ে সম্পত্তি তালিকাভুক্ত ও বিজ্ঞাপন পোস্ট করতে (plotify.store/properties)\n• সাইন আপে সমস্যা হলে সরাসরি চ্যাটেই আপনার অ্যাকাউন্ট তৈরি করতে\n\nSir, আজ আপনাকে কীভাবে সাহায্য করতে পারি?`
+    : `Sir, hello! I am **Ploti AI**, your friendly and helpful real estate assistant for **Plotify**.\n\nI can help you:\n• Find plots, flats, and land in Dhaka, Rajshahi, Chittagong, and across Bangladesh\n• Guide you on listing your properties (plotify.store/properties)\n• Create a Plotify account for you right here if you face signup issues\n\nSir, how may I assist you today?`;
 
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: initialMsgText },
@@ -51,12 +51,12 @@ export default function PlotiAI() {
   const QUICK_REPLIES = lang === 'BN' ? [
     'গুলশানে ফ্ল্যাট খুঁজুন',
     'সম্পত্তি বিজ্ঞাপন কীভাবে দেব?',
-    'বসুন্ধরায় প্লটের দাম কেমন?',
+    'প্লটিফাই অ্যাকাউন্ট তৈরি করুন',
     'পূর্বাচলে প্লট সন্ধান করুন',
   ] : [
     'Find flats in Gulshan',
     'How to list my property?',
-    'What is the price in Bashundhara?',
+    'Create an account for me',
     'Search plots in Purbachal',
   ];
 
@@ -203,6 +203,7 @@ export default function PlotiAI() {
       let buffer = '';
       let provider = 'Google Gemini';
       let latencyMs = 0;
+      let serverLog: any = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -237,6 +238,12 @@ export default function PlotiAI() {
               if (data.done) {
                 provider = data.provider || provider;
                 latencyMs = data.responseTimeMs || (Date.now() - clientStartTime);
+                if (data.log) {
+                  serverLog = data.log;
+                }
+                if (data.accountCreated?.user) {
+                  DataStore.upsertUser(data.accountCreated.user);
+                }
                 if (data.fullReply && data.fullReply.length > accumulated.length) {
                   accumulated = data.fullReply;
                   setMessages(prev => {
@@ -271,6 +278,12 @@ export default function PlotiAI() {
               if (data.fullReply && data.fullReply.length > accumulated.length) {
                 accumulated = data.fullReply;
               }
+              if (data.done && data.log) {
+                serverLog = data.log;
+              }
+              if (data.accountCreated?.user) {
+                DataStore.upsertUser(data.accountCreated.user);
+              }
             } catch { }
           }
         }
@@ -291,8 +304,8 @@ export default function PlotiAI() {
 
       if (!accumulated.trim()) {
         accumulated = lang === 'BN'
-          ? 'আমি সাহায্য করতে প্রস্তুত! অনুগ্রহ করে পুনরায় প্রশ্ন করুন।'
-          : "I'm ready to help! Please ask your question again.";
+          ? 'Sir (স্যার), আমি সাহায্য করতে প্রস্তুত! অনুগ্রহ করে পুনরায় প্রশ্ন করুন।'
+          : "Sir, I'm ready to help! Please ask your question again, Sir.";
         setMessages(prev => {
           const last = prev[prev.length - 1];
           if (last && last.role === 'assistant') {
@@ -305,13 +318,17 @@ export default function PlotiAI() {
       }
 
       const finalLatency = latencyMs || (Date.now() - clientStartTime);
-      DataStore.recordAiLog(userName, userText, finalLatency, accumulated, provider);
+      if (serverLog) {
+        DataStore.saveServerAiLog(serverLog);
+      } else {
+        DataStore.recordAiLog(userName, userText, finalLatency, accumulated, provider);
+      }
     } catch {
       setLoading(false);
       const clientElapsed = Date.now() - clientStartTime;
       const errorReply = lang === 'BN'
-        ? '⚠️ এআই সার্ভারে সংযোগে সমস্যা হচ্ছে। অনুগ্রহ করে আপনার GEMINI_API_KEY অথবা OPENAI_API_KEY কনফিগারেশন নিশ্চিত করুন।'
-        : '⚠️ Unable to reach AI server. Please verify your GEMINI_API_KEY or OPENAI_API_KEY in `.env.local`.';
+        ? 'Sir, এআই সার্ভারে সংযোগে সমস্যা হচ্ছে। অনুগ্রহ করে আপনার GEMINI_API_KEY অথবা OPENAI_API_KEY কনফিগারেশন নিশ্চিত করুন।'
+        : 'Sir, unable to reach AI server. Please verify your GEMINI_API_KEY or OPENAI_API_KEY in `.env.local`.';
 
       setMessages(prev => {
         const last = prev[prev.length - 1];
@@ -340,9 +357,9 @@ export default function PlotiAI() {
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-slate-200 dark:border-white/10 bg-slate-100/90 dark:bg-gradient-to-r dark:from-brand-900/60 dark:to-dark-800/80 shrink-0">
-        <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white text-base shadow-glow-sm shrink-0">
-          <Bot className="w-4 h-4" />
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-brand-400 rounded-full border-2 border-white dark:border-dark-800" />
+        <div className="relative w-8 h-8 rounded-full bg-white dark:bg-dark-800 border border-brand-500/30 flex items-center justify-center p-0.5 shadow-sm shrink-0">
+          <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-dark-800 animate-pulse" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -466,8 +483,10 @@ export default function PlotiAI() {
                 </div>
               ) : historySessions.length === 0 ? (
                 <div className="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-2 text-slate-400">
-                  <MessageSquare className="w-8 h-8 opacity-40" />
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-dark-800 border border-brand-500/20 p-2 shadow-xs mb-1 flex items-center justify-center">
+                    <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                     {lang === 'BN' ? 'কোনো সংরক্ষিত চ্যাট নেই' : 'No saved conversations'}
                   </p>
                   <p className="text-[11px] text-slate-400">
@@ -571,8 +590,8 @@ export default function PlotiAI() {
                   return (
                     <div key={i} className={cn('flex gap-2', m.role === 'user' ? 'justify-end' : 'justify-start')}>
                       {m.role === 'assistant' && (
-                        <div className="w-6 h-6 rounded-lg bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 mt-0.5">
-                          <Bot className="w-3.5 h-3.5" />
+                        <div className="w-6 h-6 rounded-md bg-white dark:bg-dark-800 border border-brand-500/25 flex items-center justify-center shrink-0 mt-0.5 p-0.5 shadow-xs overflow-hidden">
+                          <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
                         </div>
                       )}
                       <div
@@ -605,8 +624,8 @@ export default function PlotiAI() {
 
                 {loading && (
                   <div className="flex gap-2 justify-start">
-                    <div className="w-6 h-6 rounded-lg bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
-                      <Bot className="w-3.5 h-3.5" />
+                    <div className="w-6 h-6 rounded-md bg-white dark:bg-dark-800 border border-brand-500/25 flex items-center justify-center shrink-0 p-0.5 shadow-xs overflow-hidden">
+                      <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
                     </div>
                     <div className="backdrop-blur-md bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/15 rounded-2xl rounded-bl-sm px-3.5 py-2.5">
                       <div className="flex gap-1.5 items-center">

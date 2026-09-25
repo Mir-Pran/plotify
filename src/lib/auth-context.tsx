@@ -6,7 +6,7 @@ import { User, UserRole, UpgradeStatus } from './types';
 import { DataStore, INITIAL_USERS } from './data/store';
 import { createClient } from './supabase/client';
 import { loginSchema, registerSchema, LoginFormData, RegisterFormData, UpgradeBusinessFormData } from './validations/auth';
-import { hashPassword } from './auth-crypto';
+import { hashPassword, verifyPassword } from './auth-crypto';
 
 interface AuthContextType {
   user: User | null;
@@ -59,8 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               organizationName: remoteProfile.organization_name || remoteProfile.business_name,
               organization_name: remoteProfile.organization_name,
               businessName: remoteProfile.business_name || remoteProfile.organization_name,
-              isVerified: remoteProfile.is_verified ?? (remoteProfile.role === 'business' ? false : true),
-              verificationStatus: remoteProfile.verification_status || (remoteProfile.role === 'business' ? 'pending' : 'unverified'),
+              isVerified: remoteProfile.is_verified === true,
+              verificationStatus: remoteProfile.verification_status || (remoteProfile.is_verified ? 'verified' : (remoteProfile.role === 'business' ? 'pending' : 'unverified')),
               upgradeStatus: remoteProfile.upgrade_status || 'none',
               nidNumber: remoteProfile.nid_number,
               nidUrl: remoteProfile.nid_url,
@@ -83,9 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               organization_name: authUser.user_metadata?.organization_name || authUser.user_metadata?.organizationName,
               businessName: authUser.user_metadata?.business_name || authUser.user_metadata?.organization_name,
               createdAt: authUser.created_at || new Date().toISOString(),
-              isVerified: role === 'business' ? false : true,
-              verificationStatus: role === 'business' ? 'pending' : 'unverified',
-              upgradeStatus: role === 'business' ? 'pending_approval' : 'none',
+              isVerified: authUser.user_metadata?.is_verified === true,
+              verificationStatus: authUser.user_metadata?.verification_status || (role === 'business' ? 'pending' : 'unverified'),
+              upgradeStatus: authUser.user_metadata?.upgrade_status || (role === 'business' ? 'pending_approval' : 'none'),
             };
             DataStore.upsertUser(profile);
           }
@@ -146,26 +146,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const email = parsed.data.email.toLowerCase().trim();
       const password = parsed.data.password;
 
-      // 2. Strict Administrator Check (support@plotify.store / Plotify@Support)
+      // 2. Strict Administrator Check (support@plotify.store)
       if (email === 'support@plotify.store') {
-        if (password !== 'Plotify@Support') {
-          setLoading(false);
-          return { success: false, error: 'Invalid email or password.' };
+        const storedAdminHash = DataStore.getCredentials()[email];
+        let isValidAdmin = false;
+        if (storedAdminHash) {
+          isValidAdmin = await verifyPassword(password, storedAdminHash);
+        } else {
+          isValidAdmin = password === 'Plotify@Support';
         }
-        const adminUser: User = {
-          id: 'user-admin-01',
-          email: 'support@plotify.store',
-          fullName: 'Plotify Super Admin',
-          mobile: '01700000000',
-          role: 'admin',
-          createdAt: '2026-01-01T00:00:00Z',
-          isVerified: true,
-        };
-        DataStore.upsertUser(adminUser);
-        setUser(adminUser);
-        localStorage.setItem(SESSION_KEY, adminUser.id);
-        setLoading(false);
-        return { success: true };
+
+        if (isValidAdmin) {
+          const adminUser: User = {
+            id: 'user-admin-01',
+            email: 'support@plotify.store',
+            fullName: 'Plotify Super Admin',
+            mobile: '01700000000',
+            role: 'admin',
+            createdAt: '2026-01-01T00:00:00Z',
+            isVerified: true,
+          };
+          DataStore.upsertUser(adminUser);
+          setUser(adminUser);
+          localStorage.setItem(SESSION_KEY, adminUser.id);
+          setLoading(false);
+          return { success: true };
+        }
       }
 
       // 3. Authenticate with custom backend API route (/api/auth/login)
@@ -208,8 +214,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               fullName: authData.user.user_metadata?.full_name || email.split('@')[0],
               mobile: authData.user.user_metadata?.phone || '01700000000',
               role: (authData.user.user_metadata?.role as UserRole) || 'personal',
+              accountType: (authData.user.user_metadata?.role as any) || 'personal',
               createdAt: new Date().toISOString(),
-              isVerified: true,
+              isVerified: authData.user.user_metadata?.is_verified === true,
+              verificationStatus: authData.user.user_metadata?.verification_status || 'unverified',
+              upgradeStatus: authData.user.user_metadata?.upgrade_status || 'none',
             };
             DataStore.upsertUser(profile);
           }
