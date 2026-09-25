@@ -32,30 +32,32 @@ if (!globalStore.__plotifyChatHistory) {
 }
 
 // System prompt for Ploti AI meeting all required rules
-const SYSTEM_PROMPT = `You are "Ploti AI", a friendly and helpful real estate assistant for "Plotify" (plotify.store).
+const SYSTEM_PROMPT = `You are "Ploti AI", a friendly, highly intelligent, and helpful real estate assistant for "Plotify" (plotify.store).
 
 MANDATORY INSTRUCTIONS:
 
-1. ALWAYS ADDRESS THE USER AS "SIR":
-   - In EVERY SINGLE response, you MUST address the user as "Sir".
-   - Start your response directly addressing the user as Sir.
-   - Examples:
-     • "Sir, to list your property on Plotify, visit plotify.store/properties/new..."
-     • "Sir, here are the available plots and flats in Dhaka, Rajshahi, and Chittagong..."
-     • "Sir, I can help you find verified land..."
-   - In Bengali/Banglish: Start with "Sir (স্যার)," or "Sir," and maintain respectful tone throughout.
+1. LANGUAGE INTELLIGENCE & STRICT COMPLIANCE (CRITICAL):
+   - You are fully fluent in both Bengali (বাংলা) and English.
+   - If the user writes in Bengali (বাংলা), Romanized Bengali / Banglish (e.g., 'bangla bolo', 'kemon acho', 'kemon achen', 'ki obostha', 'flat khujchi', 'plot lagbe', 'dam koto', 'vai', etc.), or explicitly asks to speak in Bengali ('bangla bolo', 'বাংলা বলো', 'speak in bangla'):
+     • YOU MUST RESPOND EXCLUSIVELY IN NATURAL, RESPECTFUL, ACCURATE BENGALI (বাংলা).
+     • NEVER reply in English when addressed in Bengali, Banglish, or when asked to speak Bengali.
+     • If the user says "bangla bolo" (or similar), warmly and immediately acknowledge in Bengali: "Sir (স্যার), অবশ্যই! আমি সম্পূর্ণ বাংলায় কথা বলছি। প্লটিফাইয়ে প্রপার্টি খোঁজা, লিস্টিং বা অ্যাকাউন্ট বিষয়ে কীভাবে সাহায্য করতে পারি বলুন, Sir?"
+   - If the user writes in English, reply in English.
+   - Maintain the same language the user initiated, unless they ask to switch.
 
-2. STRAIGHTFORWARD, DIRECT & CONCISE ANSWERS:
+2. ALWAYS ADDRESS THE USER AS "SIR":
+   - In EVERY SINGLE response, you MUST address the user as "Sir".
+   - In Bengali/Banglish: Start your response with "Sir (স্যার)," or "Sir," and maintain a respectful tone throughout.
+   - In English: Start your response directly addressing the user as "Sir,".
+
+3. STRAIGHTFORWARD, DIRECT & CONCISE ANSWERS:
    - Your answers must be completely straightforward, direct, concise, and helpful.
    - Strictly avoid fluff, filler words, repetitive pleasantries, or wordy conversational intros.
-   - Get straight to the point immediately after saying "Sir,".
-
-3. RESPONSE FORMATTING:
-   - Keep answers concise, direct, and well-structured (maximum 2-3 short paragraphs or clean bullet points).
+   - Maximum 2-3 short paragraphs or clean bullet points.
    - Never cut off mid-sentence. Always complete your markdown, lists, and sentences cleanly.
 
 4. KNOWLEDGE BASE & REAL ESTATE GUIDANCE:
-   - Help users find plots, flats, and land in areas like Dhaka (Gulshan, Banani, Uttara, Bashundhara, Purbachal), Rajshahi, Chittagong, Sylhet, and other districts across Bangladesh.
+   - Help users find plots, flats, and land in areas like Dhaka (Gulshan, Banani, Uttara, Bashundhara, Purbachal, Mirpur, Dhanmondi), Rajshahi, Chittagong, Sylhet, and other districts across Bangladesh.
    - Guide users on how to list properties on Plotify at plotify.store/properties or plotify.store/properties/new:
      • Step 1: Sign in and click "Post Ad" (plotify.store/properties/new).
      • Step 2: Select category (Flat, Plot, House, Commercial), fill in location, price, and specs.
@@ -67,10 +69,7 @@ MANDATORY INSTRUCTIONS:
 
 5. ACCOUNT CREATION VIA AI CHAT:
    - If a user faces issues signing up, asks you to create an account, or asks how to register:
-     • Politely ask them to provide their 3 details:
-       1. Full Name
-       2. Email Address
-       3. Phone Number (01XXXXXXXXX)
+     • Politely ask them to provide their 3 details (Full Name, Email Address, Phone Number 01XXXXXXXXX).
      • Example: "Sir, I can set up your standard Plotify personal account directly. Please provide your:\n1. Full Name\n2. Email Address\n3. Phone Number\nSir, once you provide these details, your account will be activated immediately."
    - When details are provided, the backend provisions a standard personal account (unverified) with a temporary password. Note that personal accounts can browse and save properties, and can upgrade to a verified business seller account later by submitting NID documents from their dashboard. Always instruct them to log in at plotify.store/login.`;
 
@@ -215,17 +214,83 @@ function extractRegistrationDetails(
   return { fullName, email, mobile };
 }
 
-function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN'): string {
-  const q = userQuery.toLowerCase();
-  const isBengali =
-    lang === 'BN' ||
-    /[\u0980-\u09FF]/.test(userQuery) ||
-    q.includes('kemon') ||
-    q.includes('dorkar') ||
-    q.includes('khujchi') ||
-    q.includes('koto');
+// Detect if text is Bengali Unicode, Banglish, or requesting Bengali
+function detectIsBengali(
+  text: string,
+  history?: Array<{ role: string; content: string }>
+): boolean {
+  if (!text) return false;
+  // 1. Bengali Unicode block (U+0980 to U+09FF)
+  if (/[\u0980-\u09FF]/.test(text)) return true;
 
-  // Account creation inquiry (Requirement 4 & 5)
+  const lower = text.toLowerCase().trim();
+
+  // 2. Explicit request to speak or switch to Bengali
+  if (
+    /\b(bangla|banglay|bengali|banglaa|banglai)\b/i.test(lower) ||
+    /bangla.*(bolo|bolen|kotha|bolte|shunen|shuno)/i.test(lower) ||
+    /(speak|talk|tell).*(in\s+)?(bangla|bengali)/i.test(lower)
+  ) {
+    return true;
+  }
+
+  // 3. Common Romanized Bengali / Banglish words & phrases
+  const banglishRegex =
+    /\b(kemon|kemn|achen|asen|acho|aso|achis|asis|achi|asi|valo|bhalo|valoi|bhaloi|khobor|obostha|obosta|dorkar|lagbe|lagbo|chai|khujchi|khujtechi|khujtesi|pabo|ase|ache|nai|nei|kothay|kothaye|koi|kivabe|ki\s*vabe|ki\s*bhabe|kemne|kobe|dam|daam|koto|mullo|taka|khoroch|khoroj|basha|bari|badi|flat|flot|plot|jomi|jami|dokan|kena|kinbo|becha|bikri|vara|bhara|shunun|shuno|bolen|bolo|bolte|janan|bolben|dhonnobad|shukriya|assalamu|alaikum|walaikum|salam|nomoshkar|adab|thik|accha|achha|jee|ji|apni|apnar|apnake|tumi|tomar|tomake|amra|amader|amar|amake|bhai|vai|bhaiya|vaiya|apu|apa)\b/i;
+
+  if (banglishRegex.test(lower)) {
+    return true;
+  }
+
+  // 4. Multi-turn history context: if previous turns were in Bengali
+  if (history && history.length > 0) {
+    const recentHistory = history.slice(-3).map(h => h.content).join(' ');
+    if (
+      (/[\u0980-\u09FF]/.test(recentHistory) || /\b(bangla|banglay|bengali)\b/i.test(recentHistory)) &&
+      lower.split(/\s+/).length <= 5 &&
+      !/\b(english|speak\s*in\s*english)\b/i.test(lower)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN'): string {
+  const q = userQuery.toLowerCase().trim();
+  const isBengali = lang === 'BN' || detectIsBengali(userQuery);
+
+  // 1. Explicit request to speak in Bengali / Banglish
+  if (
+    /^(bangla|banglay|বাংলা)\s*(bolo|bolen|kotha\s*bolo|bolte\s*paro|e\s*bolo)?$/i.test(q) ||
+    /(speak|talk|tell).*(in\s+)?(bangla|bengali)/i.test(q) ||
+    /বাংলায়?\s*(কথা\s*)?বলো/i.test(q) ||
+    /bangla\s*bolo/i.test(q)
+  ) {
+    return `Sir (স্যার), অবশ্যই! আমি সম্পূর্ণ বাংলায় আপনার সাথে কথা বলছি। প্লটিফাইয়ে (Plotify) আপনি ঢাকা, চট্টগ্রাম, রাজশাহীসহ সারা দেশের ভেরিফাইড ফ্ল্যাট, প্লট বা জমি খোঁজা, সম্পত্তি লিস্টিং অথবা অ্যাকাউন্ট তৈরির বিষয়ে কী জানতে চান বলুন, Sir?`;
+  }
+
+  // 2. Greetings & Courtesy
+  if (
+    /^(hi|hello|hey|salam|assalamu\s*alaikum|kemon\s*achen|kemon\s*acho|ki\s*khobor|ki\s*obostha|কেমন\s*আছেন|হ্যালো|হাই|সালাম)$/i.test(q) ||
+    /\b(kemon\s*achen|kemon\s*acho|ki\s*khobor|ki\s*obostha|কেমন\s*আছেন|কেমন\s*আছো)\b/i.test(q)
+  ) {
+    if (isBengali) {
+      return `Sir (স্যার), আলহামদুলিল্লাহ ভালো আছি। প্লটিফাইয়ে (Plotify) আপনাকে স্বাগতম! আমি কীভাবে আপনাকে সাহায্য করতে পারি? ঢাকা, চট্টগ্রাম বা রাজশাহীর ফ্ল্যাট, প্লট খোঁজা অথবা প্রপার্টি লিস্টিং সংক্রান্ত যেকোনো তথ্য জানতে পারেন, Sir।`;
+    }
+    return `Sir, hello and welcome to Plotify! I am doing well, thank you. How may I assist you today with verified plots, luxury flats, or property listings across Bangladesh?`;
+  }
+
+  // 3. Identity Inquiries
+  if (/\b(who\s*are\s*you|apni\s*ke|tumi\s*ke|কে\s*আপনি|আপনি\s*কে)\b/i.test(q)) {
+    if (isBengali) {
+      return `Sir (স্যার), আমি প্লটি এআই (Ploti AI)—প্লটিফাইয়ের (Plotify) অফিসিয়াল রিয়েল এস্টেট সহকারী। আমি আপনাকে সারা বাংলাদেশের ভেরিফাইড ফ্ল্যাট, প্লট, জমি খুঁজে পেতে, প্রপার্টি বিজ্ঞাপন পোস্ট করতে এবং অ্যাকাউন্ট তৈরি করতে সরাসরি সাহায্য করি।`;
+    }
+    return `Sir, I am Ploti AI, the official real estate assistant for Plotify (plotify.store). I help users find verified flats, plots, and land across Bangladesh, guide property listings, and assist with account setup.`;
+  }
+
+  // 4. Account creation inquiry (Requirement 4 & 5)
   if (
     /account|sign\s*up|signup|signing\s*up|register|registration|trouble.*sign|problem.*sign|issue.*sign|cant.*sign|cannot.*sign|open.*acc|make.*acc|অ্যাকাউন্ট|সাইন\s*আপ|রেজিস্টার/i.test(
       q
@@ -233,12 +298,12 @@ function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN')
     /create.*acc/i.test(q)
   ) {
     if (isBengali) {
-      return `Sir (স্যার), আমি সরাসরি আপনার প্লটিফাই অ্যাকাউন্ট তৈরি করে দিতে পারি। অনুগ্রহ করে আপনার:\n1. পুরো নাম\n2. ইমেইল ঠিকানা\n3. ফোন নম্বর (০১XXXXXXXXX)\n\nSir, তথ্য পেলেই সাথে সাথে আপনার অ্যাকাউন্ট সক্রিয় করে লগইন তথ্য প্রদান করা হবে।`;
+      return `Sir (স্যার), আমি সরাসরি আপনার প্লটিফাই অ্যাকাউন্ট তৈরি করে দিতে পারি। অনুগ্রহ করে আপনার:\n1. পুরো নাম\n2. ইমেইল ঠিকানা\n3. ফোন নম্বর (০১XXXXXXXXX)\n\nSir, তথ্য পেলেই সাথে সাথে আপনার অ্যাকাউন্ট সক্রিয় করে লগইন তথ্য প্রদান করা হবে।`;
     }
     return `Sir, I can set up your Plotify account directly. Please provide your:\n1. Full Name\n2. Email Address\n3. Phone Number (01XXXXXXXXX)\n\nSir, once provided, I will create your account immediately and give you your login credentials.`;
   }
 
-  // How to list property on Plotify
+  // 5. How to list property on Plotify / Post ad
   if (
     q.includes('list') ||
     q.includes('post ad') ||
@@ -246,51 +311,79 @@ function generateDynamicRealEstateResponse(userQuery: string, lang: 'BN' | 'EN')
     q.includes('advertise') ||
     q.includes('sell property') ||
     q.includes('বিজ্ঞাপন') ||
-    q.includes('লিস্টিং')
+    q.includes('লিস্টিং') ||
+    q.includes('বিক্রি') ||
+    q.includes('post')
   ) {
     if (isBengali) {
-      return `Sir, প্লটিফাইয়ে আপনার সম্পত্তির বিজ্ঞাপন দিতে:\n1. আপনার অ্যাকাউন্টে লগইন করে **Post Ad** অপশনে যান বা [plotify.store/properties/new](https://plotify.store/properties/new) পেজে যান।\n2. ফ্ল্যাট, প্লট বা বাড়ি নির্বাচন করে লোকেশন, মূল্য ও বিবরণ দিন।\n3. স্পষ্ট ছবি আপলোড করে সাবমিট করুন। এডমিন যাচাই শেষে বিজ্ঞাপনটি লাইভ হবে।\n\nSir, সব ভেরিফাইড প্রপার্টি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
+      return `Sir (স্যার), প্লটিফাইয়ে আপনার সম্পত্তির বিজ্ঞাপন দিতে:\n1. আপনার অ্যাকাউন্টে লগইন করে **Post Ad** অপশনে যান বা [plotify.store/properties/new](https://plotify.store/properties/new) পেজে যান।\n2. ফ্ল্যাট, প্লট বা বাড়ি নির্বাচন করে লোকেশন, মূল্য ও বিবরণ দিন।\n3. স্পষ্ট ছবি আপলোড করে সাবমিট করুন। এডমিন যাচাই শেষে বিজ্ঞাপনটি লাইভ হবে।\n\nSir, সব ভেরিফাইড প্রপার্টি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
     }
     return `Sir, to list your property on Plotify:\n1. Log in to your account and click **Post Ad** or visit [plotify.store/properties/new](https://plotify.store/properties/new).\n2. Select your category (Flat, Plot, House, Commercial) and enter the location, pricing, and details.\n3. Upload clear photos and submit for admin verification.\n\nSir, once approved, your listing goes live at [plotify.store/properties](https://plotify.store/properties) with a Verified badge.`;
   }
 
-  // Listing activation fees
+  // 6. Listing activation fees
   if (q.includes('fee') || q.includes('cost') || q.includes('ফি') || q.includes('খরচ') || q.includes('charge')) {
     if (isBengali) {
-      return `Sir, প্লটিফাই অফিসিয়াল লিস্টিং অ্যাক্টিভেশন ফি তালিকা:\n• **ফ্ল্যাট ও বাড়ি:** ৳১,০০০ – ৳৫,০০০\n• **জমি ও প্লট:** ৳৭০০ – ৳৪,৫০০\n• **মেস ও সাবলেট:** ৳৫০০ – ৳২,০০০\n\nSir, প্রপার্টির মূল্যের ওপর ভিত্তি করে ফি নির্ধারিত হয় এবং এডমিন যাচাইয়ের পর ভেরিফাইড ব্যাজ কার্যকর হয়।`;
+      return `Sir (স্যার), প্লটিফাই অফিসিয়াল লিস্টিং অ্যাক্টিভেশন ফি তালিকা:\n• **ফ্ল্যাট ও বাড়ি:** ৳১,০০০ – ৳৫,০০০\n• **জমি ও প্লট:** ৳৭০০ – ৳৪,৫০০\n• **মেস ও সাবলেট:** ৳৫০০ – ৳২,০০০\n\nSir, প্রপার্টির মূল্যের ওপর ভিত্তি করে ফি নির্ধারিত হয় এবং এডমিন যাচাইয়ের পর ভেরিফাইড ব্যাজ কার্যকর হয়।`;
     }
     return `Sir, here is the official Plotify listing activation fee schedule:\n• **Flats & Houses:** ৳1,000 – ৳5,000\n• **Plots & Land:** ৳700 – ৳4,500\n• **Mess & Sublet:** ৳500 – ৳2,000\n\nSir, activation fees are scaled by property value. All verified listings receive a 100% Verified badge.`;
   }
 
-  // Flats in Gulshan, Banani, Dhaka
-  if (q.includes('gulshan') || q.includes('গুলশান') || q.includes('banani') || q.includes('বনানী') || q.includes('dhaka') || q.includes('ঢাকা') || q.includes('flat') || q.includes('ফ্ল্যাট')) {
-    if (isBengali) {
-      return `Sir, গুলশান, বনানী ও ঢাকায় ৩-৪ বেডের লাক্সারি ফ্ল্যাট ৳২.৫ কোটি থেকে ৳৭ কোটির মধ্যে পাওয়া যাচ্ছে (তিতাস গ্যাস ও সার্বক্ষণিক ব্যাকআপসহ)।\n\nSir, সব ভেরিফাইড প্রপার্টি সরাসরি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
-    }
-    return `Sir, verified 3-4 bed luxury flats in Gulshan, Banani, and Dhaka range from ৳2.5 Crore to ৳7 Crore, equipped with authentic Titas gas and generator backup.\n\nSir, you can explore all verified listings directly at [plotify.store/properties](https://plotify.store/properties).`;
-  }
-
-  // Plots and Land in Rajshahi, Chittagong, Purbachal
+  // 7. Pricing & Budget
   if (
-    q.includes('purbachal') ||
-    q.includes('পূর্বাচল') ||
-    q.includes('plot') ||
-    q.includes('land') ||
-    q.includes('rajshahi') ||
-    q.includes('chittagong') ||
-    q.includes('চট্টগ্রাম') ||
-    q.includes('রাজশাহী') ||
-    q.includes('জমি') ||
-    q.includes('প্লট')
+    q.includes('dam') ||
+    q.includes('daam') ||
+    q.includes('দাম') ||
+    q.includes('price') ||
+    q.includes('budget') ||
+    q.includes('বাজেট') ||
+    q.includes('টাকা') ||
+    q.includes('mullo') ||
+    q.includes('মূল্য')
   ) {
     if (isBengali) {
-      return `Sir, ঢাকা (পূর্বাচল, বসুন্ধরা), চট্টগ্রাম ও রাজশাহীতে অনুমোদিত প্লট ও জমি পাওয়া যাচ্ছে। পূর্বাচলে ৩-৫ কাঠার প্লট প্রতি কাঠা ৳১৫-২৫ লাখ (১ কাঠা = ৭২০ বর্গফুট)।\n\nSir, ভেরিফাইড প্লটের তালিকা দেখতে [plotify.store/properties](https://plotify.store/properties) পেজ দেখুন।`;
+      return `Sir (স্যার), প্লটিফাইয়ে প্রপার্টির বর্তমান বাজারদর:\n• **ঢাকায় ফ্ল্যাট (গুলশান/বনানী):** ৳২.৫ কোটি – ৳৭ কোটি\n• **মিরপুর/উত্তরায় ফ্ল্যাট:** ৳৬৫ লাখ – ৳২ কোটি\n• **পূর্বাচল/বসুন্ধরায় প্লট:** প্রতি কাঠা ৳১৫ লাখ – ৳৪০ লাখ\n• **রাজশাহী ও চট্টগ্রামে ফ্ল্যাট:** ৳৪৫ লাখ – ৳১.৮ কোটি\n\nSir, আপনার বাজেট অনুযায়ী বিস্তারিত দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
+    }
+    return `Sir, here are current property price ranges on Plotify:\n• **Flats in Gulshan/Banani:** ৳2.5 Cr – ৳7 Cr\n• **Flats in Mirpur/Uttara:** ৳65 Lakh – ৳2 Cr\n• **Plots in Purbachal/Bashundhara:** ৳15 Lakh – ৳40 Lakh per Katha\n• **Flats in Rajshahi & Chittagong:** ৳45 Lakh – ৳1.8 Cr\n\nSir, explore all listings within your budget at [plotify.store/properties](https://plotify.store/properties).`;
+  }
+
+  // 8. Flats in Gulshan, Banani, Dhaka, Uttara, Mirpur
+  if (
+    q.includes('gulshan') || q.includes('গুলশান') ||
+    q.includes('banani') || q.includes('বনানী') ||
+    q.includes('uttara') || q.includes('উত্তরা') ||
+    q.includes('mirpur') || q.includes('মিরপুর') ||
+    q.includes('dhanmondi') || q.includes('ধানমন্ডি') ||
+    q.includes('dhaka') || q.includes('ঢাকা') ||
+    q.includes('flat') || q.includes('ফ্ল্যাট') ||
+    q.includes('basha') || q.includes('বাসা') ||
+    q.includes('bari') || q.includes('বাড়ি')
+  ) {
+    if (isBengali) {
+      return `Sir (স্যার), গুলশান, বনানী, উত্তরা ও মিরপুরে ৩-৪ বেডের লাক্সারি ও রেডি ফ্ল্যাট ৳৮০ লাখ থেকে ৳৭ কোটির মধ্যে পাওয়া যাচ্ছে (তিতাস গ্যাস, লিফট ও সার্বক্ষণিক ব্যাকআপসহ)।\n\nSir, সব ভেরিফাইড প্রপার্টি সরাসরি দেখতে ভিজিট করুন [plotify.store/properties](https://plotify.store/properties)।`;
+    }
+    return `Sir, verified 3-4 bed luxury flats in Gulshan, Banani, Uttara, and Mirpur range from ৳80 Lakh to ৳7 Crore, equipped with authentic utilities, lift, and generator backup.\n\nSir, you can explore all verified listings directly at [plotify.store/properties](https://plotify.store/properties).`;
+  }
+
+  // 9. Plots and Land in Rajshahi, Chittagong, Purbachal, Bashundhara
+  if (
+    q.includes('purbachal') || q.includes('পূর্বাচল') ||
+    q.includes('bashundhara') || q.includes('বসুন্ধরা') ||
+    q.includes('plot') || q.includes('প্লট') ||
+    q.includes('land') || q.includes('জমি') ||
+    q.includes('rajshahi') || q.includes('রাজশাহী') ||
+    q.includes('chittagong') || q.includes('চট্টগ্রাম') ||
+    q.includes('ctg') || q.includes('sylhet') || q.includes('সিলেট')
+  ) {
+    if (isBengali) {
+      return `Sir (স্যার), ঢাকা (পূর্বাচল, বসুন্ধরা), চট্টগ্রাম ও রাজশাহীতে অনুমোদিত প্লট ও জমি পাওয়া যাচ্ছে। পূর্বাচলে ৩-৫ কাঠার প্লট প্রতি কাঠা ৳১৫-২৫ লাখ (১ কাঠা = ৭২০ বর্গফুট)।\n\nSir, ভেরিফাইড প্লটের তালিকা দেখতে [plotify.store/properties](https://plotify.store/properties) পেজ দেখুন।`;
     }
     return `Sir, verified residential and commercial plots are available across Dhaka (Purbachal, Bashundhara R/A), Chittagong, and Rajshahi. In Purbachal Sector 17, RAJUK-approved plots range from ৳15–25 Lakh per Katha (1 Katha = 720 sq ft).\n\nSir, please explore verified land listings at [plotify.store/properties](https://plotify.store/properties).`;
   }
 
+  // 10. General Welcome & Assistance
   if (isBengali) {
-    return `Sir, আমি প্লটি এআই (Ploti AI), প্লটিফাইয়ে আপনার রিয়েল এস্টেট সহকারী। ঢাকা, চট্টগ্রাম, রাজশাহীসহ সারা দেশে ফ্ল্যাট, জমি খোঁজা, প্রপার্টি লিস্টিং বা অ্যাকাউন্ট তৈরিতে আমি প্রস্তুত। কীভাবে সাহায্য করতে পারি, Sir?`;
+    return `Sir (স্যার), আমি প্লটি এআই (Ploti AI), প্লটিফাইয়ে (Plotify) আপনার বিশ্বস্ত রিয়েল এস্টেট সহকারী। ঢাকা, চট্টগ্রাম, রাজশাহীসহ সারা দেশে ভেরিফাইড ফ্ল্যাট, প্লট, জমি খোঁজা, প্রপার্টি বিজ্ঞাপন দেওয়া বা নতুন অ্যাকাউন্ট তৈরিতে আমি প্রস্তুত। কীভাবে সাহায্য করতে পারি, Sir?`;
   }
 
   return `Sir, I am Ploti AI, your friendly and helpful real estate assistant for Plotify. I can help you find verified plots, flats, and land in Dhaka, Rajshahi, Chittagong, guide property listings, or create an account for you. How may I assist you, Sir?`;
@@ -570,9 +663,11 @@ export async function POST(req: NextRequest) {
         providerUsed = 'ploti-account-provisioner';
       } else if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
         const candidateModels = [
-          'gemini-2.5-flash',
-          'gemini-2.0-flash',
-          'gemini-1.5-flash',
+          'gemini-3.5-flash-lite',
+          'gemini-3.1-flash-lite',
+          'gemini-3.5-flash',
+          'gemini-3.8-flash',
+          'gemini-3.7-flash',
           'gemini-flash-latest',
         ];
         const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
@@ -596,12 +691,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (!aiReply) {
-        aiReply = generateDynamicRealEstateResponse(lastUserMessage, 'EN');
+        const isBn = detectIsBengali(lastUserMessage, historyTurns);
+        aiReply = generateDynamicRealEstateResponse(lastUserMessage, isBn ? 'BN' : 'EN');
       }
 
       // Ensure response ALWAYS addresses user as "Sir" (Requirement 6)
       if (aiReply && !/^sir/i.test(aiReply.trim())) {
-        aiReply = `Sir, ${aiReply.trim()}`;
+        const isBn = detectIsBengali(lastUserMessage, historyTurns);
+        aiReply = isBn ? `Sir (স্যার), ${aiReply.trim()}` : `Sir, ${aiReply.trim()}`;
       }
 
       const responseTimeMs = Date.now() - startTime;
@@ -692,9 +789,11 @@ export async function POST(req: NextRequest) {
         // 1. Google Gemini Streaming with Multi-turn Context Memory
         if (!streamSuccess && geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your-gemini')) {
           const candidateModels = [
-            'gemini-2.5-flash',
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-3.1-flash-lite',
+            'gemini-3.5-flash',
+            'gemini-3.8-flash',
+            'gemini-3.7-flash',
             'gemini-flash-latest',
           ];
           const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
@@ -767,7 +866,8 @@ export async function POST(req: NextRequest) {
 
         // 3. Dynamic Real Estate Fallback Streaming (Always addressing as Sir)
         if (!streamSuccess || !fullReply.trim()) {
-          const fallbackText = generateDynamicRealEstateResponse(lastUserMessage, 'EN');
+          const isBn = detectIsBengali(lastUserMessage, historyTurns);
+          const fallbackText = generateDynamicRealEstateResponse(lastUserMessage, isBn ? 'BN' : 'EN');
           providerUsed = 'ploti-domain-ai';
           fullReply = fallbackText;
 
