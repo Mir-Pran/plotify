@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { AreaUnit, PropertyCategory, PropertyPurpose, ActivationFeeConfig } from './types';
+import type { AreaUnit, PropertyCategory, PropertyPurpose } from './types';
 import { ACTIVATION_FEES } from './types';
 
 export function cn(...inputs: ClassValue[]) {

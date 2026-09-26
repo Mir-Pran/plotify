@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useLanguage } from '@/lib/i18n';
-import { Building2, PlusCircle, ShieldAlert, ArrowRight, CheckCircle2, Lock, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Building2, ShieldAlert, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export default function PostAdRoutingPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function PostAdRoutingPage() {
   if (!user) {
     return (
       <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full bg-white dark:bg-dark-800/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 text-center shadow-lg">
+        <div className="max-w-md w-full bg-white dark:bg-dark-800/80 border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 text-center shadow-lg">
           <div className="w-14 h-14 rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-5">
             <Building2 className="w-7 h-7" />
           </div>
@@ -47,14 +47,14 @@ export default function PostAdRoutingPage() {
           <div className="mt-8 space-y-3">
             <Link
               href="/auth/login?redirect=/dashboard/add-property"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:scale-[1.02] transition-transform"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 hover:scale-[1.02] active:scale-[0.99] transition-transform"
             >
               {lang === 'BN' ? 'লগইন করুন' : 'Log In to Plotify'}
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/auth/register"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors active:scale-[0.99]"
             >
               {lang === 'BN' ? 'নতুন অ্যাকাউন্ট খুলুন' : 'Create Free Account'}
             </Link>
@@ -68,7 +68,7 @@ export default function PostAdRoutingPage() {
   if ((isBusiness || user.role === 'business') && !user.isVerified && !isAdmin) {
     return (
       <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
-        <div className="max-w-lg w-full bg-white dark:bg-dark-800/90 border border-amber-500/30 rounded-3xl p-8 text-center shadow-xl animate-fade-in space-y-6">
+        <div className="max-w-lg w-full bg-white dark:bg-dark-800/90 border border-amber-500/30 rounded-3xl p-6 sm:p-8 text-center shadow-xl animate-fade-in space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
             <ShieldCheck className="w-8 h-8" />
           </div>
@@ -99,14 +99,14 @@ export default function PostAdRoutingPage() {
           <div className="space-y-3">
             <Link
               href="/dashboard"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition-all"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition-all active:scale-[0.99]"
             >
               <ShieldCheck className="w-4 h-4" />
               {user.nidUrl ? 'View Verification Status on Dashboard' : 'Complete Verification on Dashboard'}
             </Link>
             <Link
               href="/dashboard"
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-dark-600 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-dark-700 transition-all"
+              className="w-full min-h-[44px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-dark-600 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-dark-700 transition-all active:scale-[0.99]"
             >
               Go to Dashboard Overview
             </Link>
@@ -119,7 +119,7 @@ export default function PostAdRoutingPage() {
   // Logged in as Personal
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-16">
-      <div className="max-w-md w-full bg-white dark:bg-dark-800/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 text-center shadow-lg">
+      <div className="max-w-md w-full bg-white dark:bg-dark-800/80 border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 text-center shadow-lg">
         <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-5">
           <ShieldAlert className="w-7 h-7" />
         </div>
@@ -135,14 +135,14 @@ export default function PostAdRoutingPage() {
         <div className="mt-8 space-y-3">
           <Link
             href="/dashboard"
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs shadow-md shadow-amber-500/20 hover:scale-[1.02] transition-transform"
+            className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs shadow-md shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.99] transition-transform"
           >
             {lang === 'BN' ? 'ড্যাশবোর্ডে আপগ্রেড করুন' : 'Upgrade on Dashboard'}
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/properties"
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors"
+            className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors active:scale-[0.99]"
           >
             {lang === 'BN' ? 'সম্পত্তি ব্রাউজ করুন' : 'Browse Properties'}
           </Link>

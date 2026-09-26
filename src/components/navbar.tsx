@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import { useTheme } from 'next-themes';
 import { useAuth } from '@/lib/auth-context';
 import {
-  Home, Search, LayoutDashboard, Menu, X,
-  Building2, MapPin, TreePine, Hotel, Users, Sun, Moon, Globe,
-  User, ShieldCheck, LogOut, ChevronDown, PlusCircle, Settings, Briefcase
+  LayoutDashboard, Menu, X, Sun, Moon, Globe,
+  User, ShieldCheck, LogOut, ChevronDown, PlusCircle
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -18,7 +18,7 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const isDark = mounted ? (resolvedTheme === 'dark') : true;
@@ -128,7 +128,7 @@ export default function Navbar() {
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-brand-500/25 bg-brand-500/5 hover:bg-brand-500/15 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-brand-500/50 shadow-xs cursor-pointer"
               title={lang === 'BN' ? 'প্লটি এআই সহকারী' : 'Ploti AI Assistant'}
             >
-              <img src="/ploti-avatar.png" alt="Ploti AI" className="w-4 h-4 object-contain" />
+              <Image src="/ploti-avatar.png" alt="Ploti AI" width={16} height={16} className="w-4 h-4 object-contain" />
               <span className="hidden sm:inline text-xs font-bold text-brand-600 dark:text-brand-300">
                 Ploti AI
               </span>
@@ -282,7 +282,8 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setOpen(!open)}
-              className="lg:hidden p-2 rounded-xl backdrop-blur-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+              className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl backdrop-blur-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 cursor-pointer"
+              aria-label="Toggle navigation menu"
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -298,7 +299,7 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+              className="flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
             >
               {l.label}
             </Link>
@@ -309,30 +310,30 @@ export default function Navbar() {
               setOpen(false);
               window.dispatchEvent(new Event('ploti-open'));
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-all text-left cursor-pointer"
+            className="w-full flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-sm font-bold text-brand-600 dark:text-brand-400 bg-brand-500/10 hover:bg-brand-500/20 transition-all text-left cursor-pointer"
           >
-            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain" />
+            <Image src="/ploti-avatar.png" alt="Ploti AI" width={20} height={20} className="w-5 h-5 object-contain" />
             <span>{lang === 'BN' ? 'প্লটি এআই চ্যাট সহকারী' : 'Chat with Ploti AI'}</span>
           </button>
 
           <div className="pt-3 border-t border-slate-200 dark:border-white/5 space-y-2">
             {user ? (
               <>
-                <div className="px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-between">
+                <div className="px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-between min-h-[44px]">
                   <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.fullName}</span>
                   {getRoleBadge()}
                 </div>
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-500/10"
+                  className="flex items-center px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-500/10"
                 >
                   My Dashboard
                 </Link>
                 <Link
                   href="/dashboard/profile"
                   onClick={() => setOpen(false)}
-                  className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                  className="flex items-center px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
                 >
                   Profile & Settings
                 </Link>
@@ -340,7 +341,7 @@ export default function Navbar() {
                   <Link
                     href="/admin"
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-2.5 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10"
+                    className="flex items-center px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-500/10"
                   >
                     Admin Control Panel
                   </Link>
@@ -349,7 +350,7 @@ export default function Navbar() {
                   <Link
                     href="/dashboard/add-property"
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-brand-600 hover:bg-brand-500/10"
+                    className="flex items-center px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold text-brand-600 hover:bg-brand-500/10"
                   >
                     Post Property
                   </Link>
@@ -359,7 +360,7 @@ export default function Navbar() {
                     setOpen(false);
                     signOut();
                   }}
-                  className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-500 hover:bg-rose-500/10"
+                  className="w-full text-left flex items-center px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold text-rose-500 hover:bg-rose-500/10 cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -369,30 +370,33 @@ export default function Navbar() {
                 <Link
                   href="/auth/login"
                   onClick={() => setOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                  className="flex items-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                 >
                   {t('nav_sign_in')}
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setOpen(false)}
-                  className="block px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                  className="flex items-center px-4 py-3 min-h-[48px] rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                 >
                   {t('nav_create_account')}
                 </Link>
               </>
             )}
 
-            <div className="flex items-center gap-3 px-4 py-2 pt-3 border-t border-slate-200 dark:border-white/5">
-              <button onClick={toggleTheme} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-400">
+            <div className="flex items-center gap-3 px-2 py-2 pt-3 border-t border-slate-200 dark:border-white/5">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 min-h-[44px] px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
                 {isDark
                   ? <><Sun className="w-4 h-4 text-amber-400" />{t('nav_light_mode')}</>
-                  : <><Moon className="w-4 h-4 text-slate-700" />{t('nav_dark_mode')}</>
+                  : <><Moon className="w-4 h-4 text-slate-700 dark:text-slate-300" />{t('nav_dark_mode')}</>
                 }
               </button>
               <button
                 onClick={() => setLang(lang === 'EN' ? 'BN' : 'EN')}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-400 ml-auto"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 min-h-[44px] px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors ml-auto cursor-pointer"
               >
                 <Globe className="w-4 h-4 text-brand-500" />
                 {t('switch_to_bangla')}

@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DollarSign, ArrowUpRight, CheckCircle2, TrendingUp, CreditCard, Download, ShieldCheck, Sliders } from 'lucide-react';
+import { DollarSign, CreditCard, Download, Sliders } from 'lucide-react';
 import { DataStore } from '@/lib/data/store';
 import { Property, ActivationFeeConfig } from '@/lib/types';
-import { formatBDT } from '@/lib/utils';
 
 export default function AdminFinancialsPage() {
   const [properties, setProperties] = useState<Property[]>([]);

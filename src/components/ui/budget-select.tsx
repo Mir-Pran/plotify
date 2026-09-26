@@ -133,7 +133,7 @@ export function BudgetSelect({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200/80 dark:border-white/10
-          rounded-xl px-3 py-2.5 text-xs text-left flex items-center justify-between
+          rounded-xl px-3 py-2.5 min-h-[46px] sm:min-h-[42px] text-xs text-left flex items-center justify-between
           transition-all outline-none cursor-pointer hover:border-slate-300 dark:hover:border-white/25
           hover:bg-white dark:hover:bg-white/10 active:scale-[0.99]
           ${isOpen ? 'border-brand-500 ring-2 ring-brand-500/20 bg-white dark:bg-white/10' : ''}
@@ -162,7 +162,7 @@ export function BudgetSelect({
       {/* Popover Menu */}
       {isOpen && (
         <div
-          className="absolute left-0 sm:right-0 sm:left-auto top-[calc(100%+6px)] w-full min-w-[280px] max-w-[340px]
+          className="absolute left-0 sm:right-0 sm:left-auto top-[calc(100%+6px)] w-[calc(100vw-2.5rem)] max-w-[340px] sm:w-80
             rounded-2xl bg-white dark:bg-[#0c1526] border border-slate-200/90 dark:border-white/20
             shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_25px_rgba(16,185,129,0.12)]
             z-[100] p-3 focus:outline-none animate-in fade-in zoom-in-95 duration-150"
@@ -185,7 +185,7 @@ export function BudgetSelect({
             <button
               type="button"
               onClick={() => handleSelectPreset('')}
-              className={`w-full px-2.5 py-1.5 text-xs text-left flex items-center justify-between rounded-lg transition-all ${
+              className={`w-full px-3 py-2 min-h-[40px] text-xs text-left flex items-center justify-between rounded-lg transition-all cursor-pointer ${
                 !value && !customMin && !customMax
                   ? 'bg-brand-50 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 font-bold border-l-2 border-brand-500'
                   : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
@@ -203,7 +203,7 @@ export function BudgetSelect({
                   key={optVal}
                   type="button"
                   onClick={() => handleSelectPreset(optVal)}
-                  className={`w-full px-2.5 py-1.5 text-xs text-left flex items-center justify-between rounded-lg transition-all ${
+                  className={`w-full px-3 py-2 min-h-[40px] text-xs text-left flex items-center justify-between rounded-lg transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-brand-50 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 font-bold border-l-2 border-brand-500'
                       : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
@@ -245,7 +245,7 @@ export function BudgetSelect({
                       handleApplyCustom(e);
                     }
                   }}
-                  className="w-full pl-6 pr-2 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-dark-900 border border-slate-200 dark:border-dark-600 text-slate-900 dark:text-white outline-none focus:border-brand-500 font-mono font-medium"
+                  className="w-full pl-6 pr-2 py-2 min-h-[42px] text-sm sm:text-xs rounded-xl bg-slate-50 dark:bg-dark-900 border border-slate-200 dark:border-dark-600 text-slate-900 dark:text-white outline-none focus:border-brand-500 font-mono font-medium"
                 />
               </div>
 
@@ -265,7 +265,7 @@ export function BudgetSelect({
                       handleApplyCustom(e);
                     }
                   }}
-                  className="w-full pl-6 pr-2 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-dark-900 border border-slate-200 dark:border-dark-600 text-slate-900 dark:text-white outline-none focus:border-brand-500 font-mono font-medium"
+                  className="w-full pl-6 pr-2 py-2 min-h-[42px] text-sm sm:text-xs rounded-xl bg-slate-50 dark:bg-dark-900 border border-slate-200 dark:border-dark-600 text-slate-900 dark:text-white outline-none focus:border-brand-500 font-mono font-medium"
                 />
               </div>
             </div>
@@ -274,7 +274,7 @@ export function BudgetSelect({
               <button
                 type="button"
                 onClick={handleApplyCustom}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-glow-sm transition-all cursor-pointer active:scale-95"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-glow-sm transition-all cursor-pointer active:scale-95"
               >
                 <span>Apply Range</span>
                 <ArrowRight className="w-3.5 h-3.5" />

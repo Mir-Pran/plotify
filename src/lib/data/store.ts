@@ -55,6 +55,16 @@ export const INITIAL_USERS: User[] = [
     createdAt: '2026-03-15T00:00:00Z',
     isVerified: false,
   },
+  {
+    id: 'user-personal-03',
+    email: 'mirmohammodpran@gmail.com',
+    fullName: 'Mir Mohammod Pran',
+    mobile: '01700000001',
+    role: 'personal',
+    upgradeStatus: 'none',
+    createdAt: '2026-03-20T00:00:00Z',
+    isVerified: true,
+  },
 ];
 
 export const INITIAL_INQUIRIES: Inquiry[] = [

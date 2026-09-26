@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { MessageCircle, Heart, X } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
 
@@ -36,10 +37,10 @@ export default function FloatingActions() {
         {/* Saved / Heart */}
         <button
           title={lang === 'BN' ? 'সংরক্ষিত সম্পত্তি' : 'Saved Properties'}
-          className="group w-11 h-11 rounded-full backdrop-blur-md bg-white dark:bg-black/40 border border-slate-200 dark:border-white/20 text-slate-700 dark:text-slate-300 hover:text-rose-500 hover:border-rose-500/40 flex items-center justify-center shadow-md dark:shadow-glass-card transition-all hover:scale-110"
+          className="group w-12 h-12 rounded-full backdrop-blur-md bg-white dark:bg-black/40 border border-slate-200 dark:border-white/20 text-slate-700 dark:text-slate-300 hover:text-rose-500 hover:border-rose-500/40 flex items-center justify-center shadow-md dark:shadow-glass-card transition-all hover:scale-110 active:scale-95"
         >
           <Heart className="w-5 h-5" />
-          <span className="absolute right-14 backdrop-blur-md bg-slate-900/90 text-white text-xs font-semibold px-2.5 py-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/20 shadow-md">
+          <span className="absolute right-16 backdrop-blur-md bg-slate-900/90 text-white text-xs font-semibold px-2.5 py-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-white/20 shadow-md">
             {lang === 'BN' ? 'সংরক্ষিত' : 'Saved'}
           </span>
         </button>
@@ -48,7 +49,7 @@ export default function FloatingActions() {
         <button
           onClick={() => setWaOpen(!waOpen)}
           title={lang === 'BN' ? 'হোয়াটসঅ্যাপ সহকারী' : 'WhatsApp AI Assistant'}
-          className="group w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#22c55e] text-white flex items-center justify-center shadow-lg shadow-green-900/30 transition-all hover:scale-110 relative"
+          className="group w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#22c55e] text-white flex items-center justify-center shadow-lg shadow-green-900/30 transition-all hover:scale-110 active:scale-95 relative"
         >
           <MessageCircle className="w-6 h-6" />
           <span className="absolute inset-0 rounded-full bg-[#25D366] animate-pulse-ring opacity-30" />
@@ -63,9 +64,11 @@ export default function FloatingActions() {
           title={lang === 'BN' ? 'প্লটি এআই স্মার্ট সহকারী' : 'Ploti AI Assistant'}
           className="group w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white dark:bg-dark-800 p-2 border-2 border-brand-500 shadow-xl shadow-brand-500/25 flex items-center justify-center transition-all hover:scale-110 active:scale-95 relative"
         >
-          <img
+          <Image
             src="/ploti-avatar.png"
             alt="Ploti AI"
+            width={48}
+            height={48}
             className="w-full h-full object-contain drop-shadow transition-transform group-hover:scale-105"
           />
           <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-dark-900 rounded-full animate-pulse" />
@@ -77,7 +80,7 @@ export default function FloatingActions() {
 
       {/* WhatsApp Topic Selector with iOS Glass Tile */}
       {waOpen && (
-        <div className="fixed right-4 sm:right-20 bottom-6 z-50 w-72 backdrop-blur-2xl bg-white/95 dark:bg-dark-900/90 border border-slate-200 dark:border-white/20 rounded-2xl shadow-xl dark:shadow-glass-modal overflow-hidden animate-slide-up">
+        <div className="fixed right-4 sm:right-20 bottom-6 z-50 w-[calc(100vw-2rem)] max-w-xs sm:w-72 backdrop-blur-2xl bg-white/95 dark:bg-dark-900/90 border border-slate-200 dark:border-white/20 rounded-2xl shadow-xl dark:shadow-glass-modal overflow-hidden animate-slide-up">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-white/10 bg-[#075E54]/90 dark:bg-[#075E54]/40">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center">
@@ -92,7 +95,11 @@ export default function FloatingActions() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setWaOpen(false)} className="text-white/80 hover:text-white p-1">
+            <button
+              onClick={() => setWaOpen(false)}
+              className="text-white/80 hover:text-white p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Close WhatsApp topics"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -107,7 +114,7 @@ export default function FloatingActions() {
                 href={`https://wa.me/${WA_NUMBER.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.msg)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2.5 rounded-xl backdrop-blur-md bg-slate-100 hover:bg-brand-500/15 dark:bg-white/5 dark:hover:bg-brand-500/20 border border-slate-200 hover:border-brand-500/40 dark:border-white/10 dark:hover:border-brand-500/40 text-xs font-medium text-slate-800 hover:text-brand-700 dark:text-slate-200 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
+                className="w-full text-left px-3 py-2.5 min-h-[44px] flex items-center rounded-xl backdrop-blur-md bg-slate-100 hover:bg-brand-500/15 dark:bg-white/5 dark:hover:bg-brand-500/20 border border-slate-200 hover:border-brand-500/40 dark:border-white/10 dark:hover:border-brand-500/40 text-xs font-medium text-slate-800 hover:text-brand-700 dark:text-slate-200 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
               >
                 {t.label}
               </a>

@@ -45,4 +45,5 @@ export const DEFAULT_CREDENTIALS: Record<string, string> = {
   // Plotify@Personal
   'tahmina@example.com': '296ec3491403144bcc631bb7c2a5e2709745262c20c4fd964548428b2ceac401',
   'tanvir.hossain@gmail.com': '296ec3491403144bcc631bb7c2a5e2709745262c20c4fd964548428b2ceac401',
+  'mirmohammodpran@gmail.com': '296ec3491403144bcc631bb7c2a5e2709745262c20c4fd964548428b2ceac401',
 };

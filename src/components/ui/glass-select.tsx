@@ -73,7 +73,7 @@ export function GlassSelect({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200/80 dark:border-white/10
-          rounded-xl px-3 py-2.5 text-xs text-left flex items-center justify-between
+          rounded-xl px-3 py-2.5 min-h-[46px] sm:min-h-[42px] text-xs text-left flex items-center justify-between
           transition-all outline-none cursor-pointer
           ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-slate-300 dark:hover:border-white/25 hover:bg-white dark:hover:bg-white/10 active:scale-[0.99]'}
           ${isOpen ? 'border-brand-500 ring-2 ring-brand-500/20 bg-white dark:bg-white/10' : ''}
@@ -97,7 +97,7 @@ export function GlassSelect({
       {/* Glass Popover Menu */}
       {isOpen && !disabled && (
         <div
-          className="absolute left-0 top-[calc(100%+6px)] w-full min-w-[200px] max-h-56 overflow-y-auto
+          className="absolute left-0 top-[calc(100%+6px)] w-full min-w-[200px] max-w-[calc(100vw-2.5rem)] max-h-56 overflow-y-auto
             rounded-xl bg-white dark:bg-[#0c1526] border border-slate-200 dark:border-white/20
             shadow-[0_20px_50px_rgba(0,0,0,0.25),0_0_20px_rgba(16,185,129,0.12)]
             z-[100] p-1.5 focus:outline-none animate-in fade-in zoom-in-95 duration-150"
@@ -120,8 +120,8 @@ export function GlassSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2 text-xs text-left flex items-center justify-between
-                    transition-all rounded-lg my-0.5
+                  className={`w-full px-3 py-2.5 min-h-[40px] text-xs text-left flex items-center justify-between
+                    transition-all rounded-lg my-0.5 cursor-pointer
                     ${
                       isSelected
                         ? 'bg-brand-50 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 font-bold border-l-2 border-brand-500 dark:border-brand-400 pl-2.5'

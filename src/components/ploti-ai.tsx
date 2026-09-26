@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   X, Send, Sparkles, Minimize2, History, PlusCircle,
-  Trash2, ArrowLeft, Clock, MessageSquare, ChevronRight,
+  Trash2, ArrowLeft, Clock,
   ShieldCheck, Loader
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -351,14 +352,14 @@ export default function PlotiAI() {
   return (
     <div
       className={cn(
-        'fixed bottom-24 right-4 sm:right-20 z-50 w-80 sm:w-96 flex flex-col backdrop-blur-2xl bg-white/95 dark:bg-dark-900/90 border border-slate-200 dark:border-white/20 rounded-2xl shadow-xl dark:shadow-glass-modal overflow-hidden transition-all',
-        minimized ? 'h-14' : 'h-[500px]',
+        'fixed bottom-24 right-4 sm:right-20 z-50 w-[calc(100vw-2rem)] max-w-sm sm:w-96 flex flex-col backdrop-blur-2xl bg-white/95 dark:bg-dark-900/90 border border-slate-200 dark:border-white/20 rounded-2xl shadow-xl dark:shadow-glass-modal overflow-hidden transition-all',
+        minimized ? 'h-14' : 'h-[min(540px,80vh)]',
       )}
     >
       {/* Header */}
       <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-slate-200 dark:border-white/10 bg-slate-100/90 dark:bg-gradient-to-r dark:from-brand-900/60 dark:to-dark-800/80 shrink-0">
         <div className="relative w-8 h-8 rounded-full bg-white dark:bg-dark-800 border border-brand-500/30 flex items-center justify-center p-0.5 shadow-sm shrink-0">
-          <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+          <Image src="/ploti-avatar.png" alt="Ploti AI" width={32} height={32} className="w-full h-full object-contain" />
           <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-dark-800 animate-pulse" />
         </div>
 
@@ -381,8 +382,9 @@ export default function PlotiAI() {
           {/* New Chat Button */}
           <button
             onClick={handleNewChat}
-            className="p-1.5 text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-300 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+            className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-300 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all cursor-pointer"
             title={lang === 'BN' ? 'নতুন চ্যাট' : 'New Chat'}
+            aria-label="New Chat"
           >
             <PlusCircle className="w-4 h-4" />
           </button>
@@ -391,12 +393,13 @@ export default function PlotiAI() {
           <button
             onClick={toggleHistory}
             className={cn(
-              'p-1.5 rounded-lg transition-all',
+              'w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer',
               showHistory
                 ? 'bg-brand-600 text-white shadow-glow-sm'
                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10'
             )}
             title={lang === 'BN' ? 'চ্যাট হিস্ট্রি' : 'Chat History'}
+            aria-label="Chat History"
           >
             <History className="w-4 h-4" />
           </button>
@@ -404,8 +407,9 @@ export default function PlotiAI() {
           {/* Minimize Button */}
           <button
             onClick={() => setMinimized(!minimized)}
-            className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+            className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all cursor-pointer"
             title="Minimize"
+            aria-label="Minimize"
           >
             <Minimize2 className="w-4 h-4" />
           </button>
@@ -413,8 +417,9 @@ export default function PlotiAI() {
           {/* Close Button */}
           <button
             onClick={() => setOpen(false)}
-            className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+            className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all cursor-pointer"
             title="Close"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -484,7 +489,7 @@ export default function PlotiAI() {
               ) : historySessions.length === 0 ? (
                 <div className="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-2 text-slate-400">
                   <div className="w-12 h-12 rounded-2xl bg-white dark:bg-dark-800 border border-brand-500/20 p-2 shadow-xs mb-1 flex items-center justify-center">
-                    <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+                    <Image src="/ploti-avatar.png" alt="Ploti AI" width={48} height={48} className="w-full h-full object-contain" />
                   </div>
                   <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                     {lang === 'BN' ? 'কোনো সংরক্ষিত চ্যাট নেই' : 'No saved conversations'}
@@ -591,7 +596,7 @@ export default function PlotiAI() {
                     <div key={i} className={cn('flex gap-2', m.role === 'user' ? 'justify-end' : 'justify-start')}>
                       {m.role === 'assistant' && (
                         <div className="w-6 h-6 rounded-md bg-white dark:bg-dark-800 border border-brand-500/25 flex items-center justify-center shrink-0 mt-0.5 p-0.5 shadow-xs overflow-hidden">
-                          <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+                          <Image src="/ploti-avatar.png" alt="Ploti AI" width={24} height={24} className="w-full h-full object-contain" />
                         </div>
                       )}
                       <div
@@ -625,7 +630,7 @@ export default function PlotiAI() {
                 {loading && (
                   <div className="flex gap-2 justify-start">
                     <div className="w-6 h-6 rounded-md bg-white dark:bg-dark-800 border border-brand-500/25 flex items-center justify-center shrink-0 p-0.5 shadow-xs overflow-hidden">
-                      <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+                      <Image src="/ploti-avatar.png" alt="Ploti AI" width={24} height={24} className="w-full h-full object-contain" />
                     </div>
                     <div className="backdrop-blur-md bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/15 rounded-2xl rounded-bl-sm px-3.5 py-2.5">
                       <div className="flex gap-1.5 items-center">
@@ -646,7 +651,7 @@ export default function PlotiAI() {
                     <button
                       key={q}
                       onClick={() => sendMessage(q)}
-                      className="text-[10px] font-semibold px-2.5 py-1 rounded-lg backdrop-blur-md bg-white dark:bg-white/5 border border-slate-200 dark:border-white/20 text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-500/20 hover:text-brand-700 dark:hover:text-brand-200 transition-all shadow-sm"
+                      className="text-xs sm:text-[10px] font-semibold px-3 py-1.5 min-h-[36px] flex items-center rounded-xl backdrop-blur-md bg-white dark:bg-white/5 border border-slate-200 dark:border-white/20 text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-500/20 hover:text-brand-700 dark:hover:text-brand-200 transition-all shadow-sm active:scale-95"
                     >
                       {q}
                     </button>
@@ -662,14 +667,15 @@ export default function PlotiAI() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                   placeholder={lang === 'BN' ? 'প্লটি এআই-কে যেকোনো প্রশ্ন করুন...' : 'Ask Ploti AI anything...'}
-                  className="flex-1 bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 transition-all outline-none shadow-sm dark:shadow-none"
+                  className="flex-1 bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl px-3.5 py-2.5 text-sm sm:text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 transition-all outline-none shadow-sm dark:shadow-none min-h-[44px]"
                 />
                 <button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || loading}
-                  className="w-8 h-8 rounded-xl bg-brand-600 hover:bg-brand-500 text-white flex items-center justify-center shrink-0 transition-all disabled:opacity-40 shadow-glow-sm"
+                  className="w-11 h-11 sm:w-10 sm:h-10 rounded-xl bg-brand-600 hover:bg-brand-500 text-white flex items-center justify-center shrink-0 transition-all disabled:opacity-40 shadow-glow-sm active:scale-95 cursor-pointer"
+                  aria-label="Send message"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                 </button>
               </div>
             </>

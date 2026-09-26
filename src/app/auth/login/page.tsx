@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { loginSchema } from '@/lib/validations/auth';
 import { motion } from 'framer-motion';
@@ -194,9 +194,17 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Password</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Password</label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-semibold text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 transition-colors py-1 px-1.5 -mr-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-700 min-h-[36px] flex items-center"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={show ? 'text' : 'password'}
                   value={password}
@@ -207,12 +215,13 @@ export default function LoginPage() {
                   placeholder="Your password"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.password ? 'border-rose-500 focus:border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-10 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-12 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none min-h-[46px]`}
                 />
                 <button
                   type="button"
                   onClick={() => setShow(!show)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-dark-600 cursor-pointer"
+                  aria-label={show ? 'Hide password' : 'Show password'}
                 >
                   {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -223,7 +232,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow-sm transition-all disabled:opacity-60 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow-sm transition-all disabled:opacity-60 cursor-pointer active:scale-95"
             >
               {loading ? <Loader className="w-4 h-4 animate-spin" /> : <><ArrowRight className="w-4 h-4" /> Sign In</>}
             </button>

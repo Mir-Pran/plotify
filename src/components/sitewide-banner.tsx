@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DataStore } from '@/lib/data/store';
 import { PlatformSettings } from '@/lib/types';
 import { useLanguage } from '@/lib/i18n';
-import { AlertCircle, Bell, X, Wrench } from 'lucide-react';
+import { Bell, X, Wrench } from 'lucide-react';
 
 export default function SitewideBanner() {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);

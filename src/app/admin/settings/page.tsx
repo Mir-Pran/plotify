@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
-  Settings, Sliders, Shield, DollarSign,
-  Save, CheckCircle2, Phone, Mail, Building2, Bell,
-  Power, Globe, Navigation, MessageCircle, AlertTriangle, RotateCcw
+  Settings, DollarSign,
+  Save, CheckCircle2, Building2, Bell,
+  Power, RotateCcw
 } from 'lucide-react';
 import { DataStore } from '@/lib/data/store';
-import { PlatformSettings, DEFAULT_PLATFORM_SETTINGS, ActivationFeeConfig, ACTIVATION_FEES } from '@/lib/types';
+import { PlatformSettings, DEFAULT_PLATFORM_SETTINGS, ACTIVATION_FEES } from '@/lib/types';
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<PlatformSettings>(DEFAULT_PLATFORM_SETTINGS);
@@ -434,7 +435,7 @@ export default function AdminSettingsPage() {
         {/* Section 5: Ploti AI Assistant Engine Settings */}
         <div className="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-500/60 rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-dark-600/50 pb-3">
-            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain inline-block" />
+            <Image src="/ploti-avatar.png" alt="Ploti AI" width={20} height={20} className="w-5 h-5 object-contain inline-block" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">Ploti AI Assistant Parameters</h2>
               <p className="text-[11px] text-slate-500">Configure LLM model engine and language processing settings</p>

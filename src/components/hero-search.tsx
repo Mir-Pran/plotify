@@ -132,11 +132,6 @@ export default function HeroSearch({ initialPurpose = 'buy' }: HeroSearchProps) 
     { value: 'hotel', label: t('search_cat_hotel') },
   ];
 
-  const budgetOptions = [
-    { value: '', label: t('search_any_budget') },
-    ...BUDGET_OPTIONS.map(b => ({ value: b.val, label: b.label })),
-  ];
-
   const labelCls = 'text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1';
 
   return (
@@ -148,7 +143,7 @@ export default function HeroSearch({ initialPurpose = 'buy' }: HeroSearchProps) 
             key={tab.val}
             type="button"
             onClick={() => { setPurpose(tab.val); setBudget(''); setCustomMin(''); setCustomMax(''); }}
-            className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+            className={`flex-1 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               purpose === tab.val
                 ? 'bg-brand-600 text-white shadow-glow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-white/5'
@@ -225,11 +220,11 @@ export default function HeroSearch({ initialPurpose = 'buy' }: HeroSearchProps) 
 
           {/* ── Actions ──────────────────────────────── */}
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-transparent uppercase tracking-wider">.</label>
+            <label className="text-[10px] font-bold text-transparent uppercase tracking-wider hidden lg:block">.</label>
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 rounded-xl text-xs shadow-glow-sm hover:shadow-glow transition-all"
+                className="flex-1 min-h-[48px] sm:min-h-0 flex items-center justify-center gap-1.5 bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm shadow-glow-sm hover:shadow-glow transition-all active:scale-95 cursor-pointer"
               >
                 <Search className="w-4 h-4" />
                 {t('search_btn')}
@@ -239,7 +234,8 @@ export default function HeroSearch({ initialPurpose = 'buy' }: HeroSearchProps) 
                 onClick={findNearby}
                 disabled={gpsLoading}
                 title={lang === 'EN' ? 'Find Nearby Properties via GPS' : 'জিপিএস দিয়ে কাছের সম্পত্তি খুঁজুন'}
-                className="w-10 flex items-center justify-center bg-slate-100 dark:bg-white/5 backdrop-blur-sm border border-brand-500/30 hover:border-brand-500/60 hover:bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-xl transition-all disabled:opacity-50 shrink-0"
+                aria-label="Find Nearby Properties via GPS"
+                className="w-12 sm:w-10 min-h-[48px] sm:min-h-0 flex items-center justify-center bg-slate-100 dark:bg-white/5 backdrop-blur-sm border border-brand-500/30 hover:border-brand-500/60 hover:bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-xl transition-all disabled:opacity-50 shrink-0 active:scale-95 cursor-pointer"
               >
                 {gpsLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
               </button>

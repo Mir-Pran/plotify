@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Loader, Briefcase, Building2, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Loader, Briefcase, Building2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { registerSchema } from '@/lib/validations/auth';
 import type { AccountType } from '@/lib/types';
@@ -148,7 +148,7 @@ export default function RegisterPage() {
                   key={t.val}
                   type="button"
                   onClick={() => update('accountType', t.val)}
-                  className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border text-center transition-all ${
+                  className={`flex flex-col items-center gap-2 p-3.5 min-h-[56px] rounded-xl border text-center transition-all cursor-pointer ${
                     form.accountType === t.val
                       ? 'border-brand-500 bg-brand-500/10 text-brand-600 dark:text-brand-300 font-bold shadow-sm'
                       : 'border-slate-200 dark:border-dark-500/60 bg-white dark:bg-dark-700/40 text-slate-600 dark:text-slate-400 hover:border-slate-300'
@@ -170,7 +170,7 @@ export default function RegisterPage() {
             {/* Full name */}
             <div className="space-y-1">
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   value={form.fullName}
@@ -178,7 +178,7 @@ export default function RegisterPage() {
                   placeholder="Full Name (e.g., Tahmina Akter)"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.fullName ? 'border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-4 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                 />
               </div>
               {errors.fullName && <p className="text-[11px] text-rose-500">{errors.fullName}</p>}
@@ -188,7 +188,7 @@ export default function RegisterPage() {
             {form.accountType === 'business' && (
               <div className="space-y-1 animate-fade-in">
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500" />
+                  <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-500" />
                   <input
                     type="text"
                     value={form.organizationName}
@@ -197,7 +197,7 @@ export default function RegisterPage() {
                     required
                     className={`w-full bg-white dark:bg-dark-700/60 border ${
                       errors.organizationName ? 'border-rose-500' : 'border-brand-500/50 dark:border-brand-500/50 focus:border-brand-500'
-                    } rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                    } rounded-xl pl-10 pr-4 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                   />
                 </div>
                 {errors.organizationName && <p className="text-[11px] text-rose-500">{errors.organizationName}</p>}
@@ -207,7 +207,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div className="space-y-1">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
                   value={form.email}
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                   placeholder="Email Address (e.g., name@gmail.com)"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.email ? 'border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-4 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                 />
               </div>
               {errors.email && <p className="text-[11px] text-rose-500">{errors.email}</p>}
@@ -224,7 +224,7 @@ export default function RegisterPage() {
             {/* Phone */}
             <div className="space-y-1">
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="tel"
                   value={form.mobile}
@@ -232,7 +232,7 @@ export default function RegisterPage() {
                   placeholder="Bangladeshi Mobile (e.g., 01712345678)"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.mobile ? 'border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-4 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                 />
               </div>
               {errors.mobile && <p className="text-[11px] text-rose-500">{errors.mobile}</p>}
@@ -241,7 +241,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="space-y-1">
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={show ? 'text' : 'password'}
                   value={form.password}
@@ -249,12 +249,13 @@ export default function RegisterPage() {
                   placeholder="Password (min 8 chars, 1 letter, 1 number)"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.password ? 'border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-12 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                 />
                 <button
                   type="button"
                   onClick={() => setShow(!show)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-dark-600 cursor-pointer"
+                  aria-label={show ? 'Hide password' : 'Show password'}
                 >
                   {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -265,7 +266,7 @@ export default function RegisterPage() {
             {/* Confirm */}
             <div className="space-y-1">
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={show ? 'text' : 'password'}
                   value={form.confirmPassword}
@@ -273,7 +274,7 @@ export default function RegisterPage() {
                   placeholder="Confirm Password"
                   className={`w-full bg-white dark:bg-dark-700/60 border ${
                     errors.confirmPassword ? 'border-rose-500' : 'border-slate-200 dark:border-dark-500/60 focus:border-brand-500'
-                  } rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
+                  } rounded-xl pl-10 pr-12 py-3 min-h-[46px] text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all shadow-sm dark:shadow-none`}
                 />
               </div>
               {errors.confirmPassword && <p className="text-[11px] text-rose-500">{errors.confirmPassword}</p>}
@@ -281,7 +282,7 @@ export default function RegisterPage() {
 
             {/* Terms */}
             <div className="space-y-1 pt-1">
-              <label className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
+              <label className="flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400 cursor-pointer py-1">
                 <input
                   type="checkbox"
                   checked={form.agreeTerms}
@@ -301,7 +302,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow-sm transition-all disabled:opacity-60 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow-sm transition-all disabled:opacity-60 cursor-pointer active:scale-95"
             >
               {loading ? <Loader className="w-4 h-4 animate-spin" /> : <><ArrowRight className="w-4 h-4" /> Create Account</>}
             </button>

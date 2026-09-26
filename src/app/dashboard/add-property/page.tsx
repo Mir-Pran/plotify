@@ -2,9 +2,8 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle, Upload, Loader, CheckCircle2, CreditCard, Building2, ChevronDown, MapPin, X, Image as ImageIcon, ShieldCheck, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Loader, CheckCircle2, CreditCard, Building2, ChevronDown, MapPin, X, ShieldCheck, AlertCircle } from 'lucide-react';
 import { BD_DIVISIONS, BD_DISTRICTS, BD_DIVISIONS_BN, BD_DISTRICTS_BN, type BDDivision } from '@/lib/data/bd-locations';
-import { ACTIVATION_FEES } from '@/lib/types';
 import { calcActivationFee, formatBDTLocalized, toBanglaDigits } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';

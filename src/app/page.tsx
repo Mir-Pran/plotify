@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import HeroSearch from '@/components/hero-search';
 import PropertyCard from '@/components/property-card';
 import { MOCK_PROPERTIES } from '@/lib/data/mock-properties';
@@ -253,9 +254,11 @@ export default function HomePage() {
                 >
                   <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 p-1.5 ${w.bg}`}>
                     {(w as any).avatarImg ? (
-                      <img
+                      <Image
                         src={(w as any).avatarImg}
                         alt={w.title}
+                        width={44}
+                        height={44}
                         className="w-full h-full object-contain drop-shadow transition-transform group-hover:scale-110"
                       />
                     ) : (

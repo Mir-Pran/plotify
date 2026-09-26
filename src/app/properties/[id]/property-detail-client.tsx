@@ -10,9 +10,9 @@ import { DataStore } from '@/lib/data/store';
 import {
   MapPin, Bed, Bath, Square, CheckCircle2, ShieldCheck, Phone,
   MessageCircle, Flame, Zap, Droplets, Car, Building2, Eye,
-  Calendar, Heart, Share2, Flag, ArrowLeft, Star, Navigation,
-  Wifi, Lock, Home, Layers, TrendingUp, MousePointerClick, Users,
-  BarChart3, AlertCircle, Sparkles, Check
+  Calendar, Heart, Share2, Flag, ArrowLeft, Navigation,
+  Lock, Home, Layers, MousePointerClick, Users,
+  BarChart3, Sparkles, Check
 } from 'lucide-react';
 
 interface PropertyDetailClientProps {
@@ -157,7 +157,7 @@ export default function PropertyDetailClient({ initialProperty, related }: Prope
   const conversionRate = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark-900 text-slate-900 dark:text-slate-100 py-8 transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-900 text-slate-900 dark:text-slate-100 pt-8 pb-24 lg:pb-12 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Back Link */}
@@ -596,6 +596,51 @@ export default function PropertyDetailClient({ initialProperty, related }: Prope
           </div>
         )}
 
+      </div>
+
+      {/* Mobile Sticky Bottom Contact Bar (Only visible on mobile screens < lg, hidden on desktop) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-dark-900/95 backdrop-blur-2xl border-t border-slate-200/90 dark:border-white/10 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] flex items-center justify-between gap-3">
+        <div className="flex flex-col min-w-0 pr-1">
+          <span className="text-[10px] uppercase font-bold text-slate-400 truncate">
+            {property.purpose === 'buy' ? 'Selling Price' : 'Monthly Rent'}
+          </span>
+          <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white truncate">
+            {formatBDT(property.price, isRent)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {user ? (
+            <>
+              <a
+                href={`tel:${property.sellerPhone}`}
+                onClick={handleContactClick}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-glow-sm active:scale-95 transition-all cursor-pointer"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Call</span>
+              </a>
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleContactClick}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs shadow-sm active:scale-95 transition-all cursor-pointer"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </a>
+            </>
+          ) : (
+            <Link
+              href={`/auth/login?redirect=/properties/${property.id}`}
+              className="flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-glow-sm active:scale-95 transition-all text-center"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Login to Contact</span>
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

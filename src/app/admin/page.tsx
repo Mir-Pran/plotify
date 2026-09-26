@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { DataStore } from '@/lib/data/store';
-import { Property, User, ApprovalStatus } from '@/lib/types';
+import { Property, User } from '@/lib/types';
 import { formatBDT } from '@/lib/utils';
 import {
   Building2, Users, DollarSign, Clock, CheckCircle2,
-  AlertTriangle, TrendingUp, Flag, ArrowUpRight,
-  Eye, Check, X, ShieldAlert, FileText, ChevronRight
+  TrendingUp, ArrowUpRight, Check, X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function AdminOverviewPage() {
   const [stats, setStats] = useState(DataStore.getAdminStats());
@@ -271,7 +270,7 @@ export default function AdminOverviewPage() {
         <div className="bg-white dark:bg-dark-800 border border-slate-200 dark:border-dark-500/60 rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <img src="/ploti-avatar.png" alt="Ploti AI" className="w-5 h-5 object-contain inline-block" />
+              <Image src="/ploti-avatar.png" alt="Ploti AI" width={20} height={20} className="w-5 h-5 object-contain inline-block" />
               Ploti AI — Live User Queries
             </h2>
             <Link href="/admin/ai-logs" className="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">

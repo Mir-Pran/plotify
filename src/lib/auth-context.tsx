@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, UserRole, UpgradeStatus } from './types';
-import { DataStore, INITIAL_USERS } from './data/store';
+import { User, UserRole } from './types';
+import { DataStore } from './data/store';
 import { createClient } from './supabase/client';
 import { loginSchema, registerSchema, LoginFormData, RegisterFormData, UpgradeBusinessFormData } from './validations/auth';
 import { hashPassword, verifyPassword } from './auth-crypto';

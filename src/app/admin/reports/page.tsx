@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  Flag, AlertTriangle, CheckCircle2, XCircle, Search, 
-  Filter, Eye, ExternalLink, ShieldAlert, Check, Ban
+  Flag, Search, ExternalLink, Check, Ban
 } from 'lucide-react';
 import { DataStore } from '@/lib/data/store';
 

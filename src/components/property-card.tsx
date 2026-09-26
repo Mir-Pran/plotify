@@ -86,13 +86,13 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-black/40 shrink-0">
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-200 dark:bg-dark-800 shrink-0">
         <Image
           src={property.featuredImage || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'}
           alt={property.title}
           fill
           loading="lazy"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
@@ -119,14 +119,15 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
             type="button"
             onClick={handleToggleSave}
             title={saved ? 'Remove from saved' : 'Save property'}
+            aria-label={saved ? 'Remove from saved' : 'Save property'}
             className={cn(
-              'p-1.5 rounded-lg backdrop-blur-md border transition-all cursor-pointer z-10',
+              'w-10 h-10 flex items-center justify-center rounded-xl backdrop-blur-md border transition-all cursor-pointer z-10 active:scale-95',
               saved
                 ? 'bg-rose-600/90 border-rose-400 text-white shadow-sm'
                 : 'bg-black/50 border-white/20 text-slate-300 hover:text-rose-400 hover:bg-black/70'
             )}
           >
-            <Heart className={cn('w-3.5 h-3.5 transition-transform active:scale-125', saved && 'fill-white text-white')} />
+            <Heart className={cn('w-4 h-4 transition-transform active:scale-125', saved && 'fill-white text-white')} />
           </button>
         </div>
 
@@ -214,7 +215,7 @@ export default function PropertyCard({ property, className }: PropertyCardProps)
           </div>
           <Link
             href={`/properties/${property.id}`}
-            className="flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-200 transition-colors"
+            className="flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-200 transition-colors py-1.5 px-2 rounded-lg hover:bg-brand-500/10 min-h-[36px]"
           >
             {t('card_details')} <ArrowRight className="w-3 h-3" />
           </Link>

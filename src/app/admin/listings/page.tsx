@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { DataStore } from '@/lib/data/store';
 import { Property, ApprovalStatus, PropertyCategory, PropertyPurpose, AreaUnit } from '@/lib/types';
 import { formatBDT } from '@/lib/utils';
-import { BD_DIVISIONS, BD_DISTRICTS, type BDDivision } from '@/lib/data/bd-locations';
+import { BD_DIVISIONS, type BDDivision } from '@/lib/data/bd-locations';
 import {
-  Building2, Search, Check, X, Trash2, Eye, Filter,
-  Clock, CheckCircle2, AlertTriangle, ArrowUpDown, ChevronDown, Edit3, ShieldCheck, Star
+  Building2, Search, Check, X, Trash2, Eye,
+  Clock, CheckCircle2, Edit3, ShieldCheck, Star
 } from 'lucide-react';
 
 export default function AdminListingsPage() {

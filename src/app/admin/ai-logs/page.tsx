@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { DataStore, AiLogItem } from '@/lib/data/store';
-import { Sparkles, CheckCircle2, Clock, Search, RefreshCw, Cpu, MessageSquare, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Clock, Search, RefreshCw, MessageSquare, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 export default function AdminAiLogsPage() {
   const [logs, setLogs] = useState<AiLogItem[]>([]);
@@ -80,7 +81,7 @@ export default function AdminAiLogsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
-            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-7 h-7 object-contain inline-block drop-shadow" />
+            <Image src="/ploti-avatar.png" alt="Ploti AI" width={28} height={28} className="w-7 h-7 object-contain inline-block drop-shadow" />
             Ploti AI — Interaction Logs & Analytics
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -152,7 +153,7 @@ export default function AdminAiLogsPage() {
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-500 space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-white dark:bg-dark-700 border border-brand-500/20 p-2 mx-auto flex items-center justify-center">
-                <img src="/ploti-avatar.png" alt="Ploti AI" className="w-full h-full object-contain" />
+                <Image src="/ploti-avatar.png" alt="Ploti AI" width={48} height={48} className="w-full h-full object-contain" />
               </div>
               <p>No Ploti AI queries logged yet. User interactions from the website chat widget will stream here live in real-time.</p>
             </div>
@@ -205,7 +206,7 @@ export default function AdminAiLogsPage() {
                       {isExpanded && (
                         <div className="mt-2 p-3.5 rounded-xl bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-900/40 text-[11px] text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                           <div className="font-bold text-brand-700 dark:text-brand-400 mb-1 flex items-center gap-1.5">
-                            <img src="/ploti-avatar.png" alt="Ploti AI" className="w-3.5 h-3.5 object-contain" /> Ploti AI Response:
+                            <Image src="/ploti-avatar.png" alt="Ploti AI" width={14} height={14} className="w-3.5 h-3.5 object-contain" /> Ploti AI Response:
                           </div>
                           {log.response}
                         </div>

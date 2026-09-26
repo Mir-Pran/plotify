@@ -107,3 +107,30 @@ export const profileUpdateSchema = z.object({
 });
 
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email address is required')
+    .email('Please enter a valid email address')
+    .toLowerCase()
+    .trim(),
+  origin: z.string().optional(),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Reset token is required'),
+    newPassword: z
+      .string()
+      .min(6, 'Password must be at least 6 characters long'),
+    confirmNewPassword: z.string().min(1, 'Please confirm your new password'),
+  })
+  .refine(data => data.newPassword === data.confirmNewPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmNewPassword'],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

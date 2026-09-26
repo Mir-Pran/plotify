@@ -7,15 +7,14 @@ import { useAuth } from '@/lib/auth-context';
 import { DataStore } from '@/lib/data/store';
 import { createClient } from '@/lib/supabase/client';
 import { Property, Inquiry, ChatSessionSummary, ChatHistoryMessage, User as UserType } from '@/lib/types';
-import { formatBDT, formatArea, cn } from '@/lib/utils';
+import { formatBDT, cn } from '@/lib/utils';
 import {
-  LayoutDashboard, PlusCircle, Building2, Eye, Heart, TrendingUp,
-  Clock, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Settings, User,
-  Bell, LogOut, MapPin, DollarSign, Layers, Home, Upload, ShieldCheck,
-  FileText, MessageSquare, Briefcase, ChevronRight, Loader, X,
-  Camera, FileUp, Image as ImageIcon, Trash2, Bot, Sparkles, Lock
+  LayoutDashboard, PlusCircle, Building2, Eye, Heart,
+  Clock, CheckCircle2, AlertCircle, ArrowRight, Settings,
+  Bell, MapPin, Upload, ShieldCheck,
+  FileText, MessageSquare, Briefcase, Loader, X,
+  Camera, FileUp, Trash2, Bot, Sparkles, Lock
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const router = useRouter();

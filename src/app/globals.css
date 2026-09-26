@@ -42,12 +42,18 @@ select option {
   color: #f1f5f9;
 }
 
-/* ===== BASE ===== */
+/* ===== BASE & MOBILE RESPONSIVENESS ===== */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -58,6 +64,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   transition: background-color 0.25s ease, color 0.25s ease;
+  touch-action: manipulation;
 }
 
 /* ===== SCROLLBAR ===== */

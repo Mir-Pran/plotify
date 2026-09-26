@@ -17,7 +17,7 @@ import { distanceKm, formatBDTLocalized, toBanglaDigits } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n';
 import {
   Search, SlidersHorizontal, Navigation, Loader, X,
-  ChevronDown, LayoutGrid, List, MapPin, CheckCircle2
+  LayoutGrid, List
 } from 'lucide-react';
 
 function PropertiesContent() {
@@ -169,7 +169,7 @@ function PropertiesContent() {
     filters.area, filters.minPrice, filters.maxPrice, filters.keyword, filters.nearbyMode,
   ].filter(Boolean).length;
 
-  const selectCls = "bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 outline-none transition-all cursor-pointer shadow-sm dark:shadow-none";
+  const selectCls = "bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl px-3 py-2.5 sm:py-2 text-xs text-slate-800 dark:text-slate-200 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 outline-none transition-all cursor-pointer shadow-sm dark:shadow-none min-h-[44px] sm:min-h-0";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
@@ -179,7 +179,7 @@ function PropertiesContent() {
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
 
             {/* Keyword search */}
-            <div className="relative flex-1 min-w-36">
+            <div className="relative flex-1 min-w-[180px] sm:min-w-36">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
@@ -187,7 +187,7 @@ function PropertiesContent() {
                 onChange={e => setKeyword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && updateFilter('keyword', keyword)}
                 placeholder={t('prop_search_ph')}
-                className="w-full bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 transition-all outline-none shadow-sm dark:shadow-none"
+                className="w-full bg-white dark:bg-white/5 backdrop-blur-sm border border-slate-200 dark:border-white/20 rounded-xl pl-9 pr-4 py-2.5 sm:py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-brand-500/60 focus:bg-white dark:focus:bg-white/10 transition-all outline-none shadow-sm dark:shadow-none min-h-[44px] sm:min-h-0"
               />
             </div>
 
@@ -233,7 +233,8 @@ function PropertiesContent() {
               onClick={findNearby}
               disabled={gpsLoading}
               title={t('prop_nearby')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md border text-xs font-bold transition-all disabled:opacity-50 ${
+              aria-label={t('prop_nearby')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0 rounded-xl backdrop-blur-md border text-xs font-bold transition-all disabled:opacity-50 cursor-pointer active:scale-95 ${
                 filters.nearbyMode
                   ? 'bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-300 shadow-glow-sm'
                   : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/20 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-brand-500/40 shadow-sm dark:shadow-none'
@@ -246,7 +247,7 @@ function PropertiesContent() {
             {/* Advanced filters */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl backdrop-blur-md bg-white dark:bg-white/5 border border-slate-200 dark:border-white/20 hover:border-brand-500/40 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
+              className="relative flex items-center gap-1.5 px-3 py-2.5 sm:py-2 min-h-[44px] sm:min-h-0 rounded-xl backdrop-blur-md bg-white dark:bg-white/5 border border-slate-200 dark:border-white/20 hover:border-brand-500/40 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm dark:shadow-none cursor-pointer active:scale-95"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400" />
               {t('prop_filters')}
@@ -269,7 +270,7 @@ function PropertiesContent() {
 
             {/* Clear */}
             {activeFilterCount > 0 && (
-              <button onClick={clearFilters} className="flex items-center gap-1 text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors">
+              <button onClick={clearFilters} className="flex items-center gap-1 text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors min-h-[44px] px-2">
                 <X className="w-3.5 h-3.5" /> {t('prop_clear')}
               </button>
             )}
@@ -392,7 +393,7 @@ function PropertiesContent() {
                 setFilters(f => ({ ...f, nearbyMode: false, lat: undefined, lng: undefined, sort: 'newest' }));
                 router.push('/properties');
               }}
-              className="text-xs font-bold text-cyan-700 dark:text-cyan-300 underline hover:text-cyan-900 dark:hover:text-white shrink-0"
+              className="text-xs font-bold text-cyan-700 dark:text-cyan-300 underline hover:text-cyan-900 dark:hover:text-white shrink-0 min-h-[36px] px-2 flex items-center cursor-pointer"
             >
               {lang === 'BN' ? 'জিপিএস রিসেট করুন' : 'Reset GPS'}
             </button>
@@ -414,7 +415,7 @@ function PropertiesContent() {
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
               {lang === 'BN' ? 'ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন' : 'Try adjusting your filters or search term'}
             </p>
-            <button onClick={clearFilters} className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow transition-all">
+            <button onClick={clearFilters} className="px-6 py-3 min-h-[48px] inline-flex items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-glow transition-all active:scale-95 cursor-pointer">
               {lang === 'BN' ? 'সব ফিল্টার মুছুন' : 'Clear All Filters'}
             </button>
           </div>

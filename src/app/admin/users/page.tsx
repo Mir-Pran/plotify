@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { DataStore } from '@/lib/data/store';
 import { User, UserRole, UpgradeStatus, Property } from '@/lib/types';
 import {
-  Users, Search, ShieldCheck, Briefcase, UserCheck, Check,
-  X, Eye, Clock, AlertCircle, FileText, CheckCircle2, Edit3, Trash2, Shield, AlertTriangle
+  Users, Search, Check,
+  X, Eye, Clock, FileText, CheckCircle2, Edit3, Trash2, AlertTriangle
 } from 'lucide-react';
 
 export default function AdminUsersPage() {
